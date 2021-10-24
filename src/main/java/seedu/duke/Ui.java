@@ -2,10 +2,21 @@ package seedu.duke;
 
 import seedu.duke.parser.Parser;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Ui {
+    private Scanner in;
+
+    public Ui() {
+        this.in = new Scanner(System.in);
+    }
+
+    public String readUserInput() {
+        return in.nextLine().trim();
+    }
+
     protected static final String INDENT = "    ";
     public static final String SUCCESSFUL_EDIT_MESSAGE = "Got it! I will update the fields accordingly!";
     public static final String UNSUCCESSFUL_EDIT_MESSAGE = "No difference detected!"
@@ -17,7 +28,7 @@ public class Ui {
     protected static final String CANCEL_MESSAGE = " To cancel, type \"cancel\"";
     public static final String MISSING_FILE_MESSAGE = "Missing data detected! Creating the necessary files...";
 
-    public static void startup() {
+    public void printGreetings() {
         System.out.println("Hello! I'm Mint");
         System.out.println("What can I do for you?");
     }
@@ -54,14 +65,14 @@ public class Ui {
         );
     }
 
-    public static void viewGivenList(ArrayList<Expense> list) {
+    public static void viewGivenList(ArrayList<Entry> list) {
         System.out.println("Here is the list of items containing the keyword.");
         for (int i = 0; i < list.size(); i++) {
-            System.out.println(INDENT + (i + 1) + "  " + list.get(i).viewToString());
+            System.out.println(INDENT + (i + 1) + "  " + list.get(i).toString());
         }
     }
 
-    public static int chooseItemToDeleteOrEdit(ArrayList<Expense> filteredList, boolean isDelete) throws MintException {
+    public static int chooseItemToDeleteOrEdit(ArrayList<Entry> filteredList, boolean isDelete) throws MintException {
         if (isDelete) {
             System.out.println("Enter the index of the item you want to delete." + CANCEL_MESSAGE);
         } else {
@@ -91,13 +102,13 @@ public class Ui {
         return index - 1;
     }
 
-    public static boolean isConfirmedToDeleteOrEdit(Expense expense, boolean isDelete) {
+    public static boolean isConfirmedToDeleteOrEdit(Entry entry, boolean isDelete) {
         if (isDelete) {
             System.out.println("Is this what you want to delete?");
         } else {
             System.out.println("Is this what you want to edit?");
         }
-        System.out.println(INDENT + expense);
+        System.out.println(INDENT + entry);
         System.out.println("Type \"y\" if yes. Type \"n\" if not.");
         Scanner in = new Scanner(System.in);
         while (true) {
@@ -130,10 +141,10 @@ public class Ui {
         System.out.println(MISSING_FILE_MESSAGE);
     }
 
-    public static void setLimitMessage(String catNumString, String amount) {
-        int catNumInt = Integer.parseInt(catNumString);
-        System.out.println("Set Limit of " + CategoryList.getCatName(catNumInt) + " to $" + amount);
-    }
+    //    public static void setLimitMessage(String catNumString, String amount) {
+    //        int catNumInt = Integer.parseInt(catNumString);
+    //        System.out.println("Set Limit of " + CategoryList.getCatName(catNumInt) + " to $" + amount);
+    //    }
 
     public static StringBuilder constructErrorMessage(ArrayList<String> missingDelimiters) throws MintException {
         int index = 1;
@@ -166,6 +177,41 @@ public class Ui {
             }
         }
         return missingFieldsErrorMessage;
+    }
+
+    public static void printView (ArrayList<Entry> outputArray, LocalDate fromDate, LocalDate endDate, double total) {
+        System.out.println("Here is the list of your expenses:");
+        if (fromDate != null) {
+            System.out.println("Since " + fromDate + " to " + endDate + ":");
+        }
+        System.out.println("  Type  |     Category     |    Date    |       Name       | Amount");
+        for (Entry entry : outputArray) {
+            System.out.println(entry.toString());
+        }
+        System.out.print("                                                Net Total: |");
+        if (total < 0) {
+            total = Math.abs(total);
+            System.out.print("-$" + String.format("%,.2f", total));
+        } else {
+            System.out.print(" $" + String.format("%,.2f", total));
+        }
+        System.out.println();
+    }
+
+    public static StringBuilder getIndent(int leftIndent, int rightIndent, String item) {
+        StringBuilder itemWithIndent = new StringBuilder();
+        while (leftIndent != 0) {
+            itemWithIndent.append(" ");
+            leftIndent--;
+        }
+
+        itemWithIndent.append(item);
+
+        while (rightIndent != 0) {
+            itemWithIndent.append(" ");
+            rightIndent--;
+        }
+        return itemWithIndent;
     }
 }
 

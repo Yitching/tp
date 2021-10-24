@@ -1,28 +1,26 @@
 package seedu.duke.commands;
 
-import seedu.duke.CategoryList;
-import seedu.duke.Expense;
-import seedu.duke.ExpenseList;
-import seedu.duke.storage.ExpenseListDataManager;
 
+import seedu.duke.Entry;
+import seedu.duke.storage.EntryListDataManager;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.logging.Level;
 
-public class AddExpenseCommand {
+
+public class AddCommand extends Command {
 
     public static final String FILE_PATH = "data" + File.separator + "Mint.txt";
 
-    public void addExpense(Expense expense, ArrayList<Expense> expenseList) {
+    public void add(Entry entry, ArrayList<Entry> entryList) {
         //        if (isCurrentMonthExpense(expense)) {
         //            CategoryList.addSpending(expense);
         //        }
         //        logger.log(Level.INFO, "User added expense: " + expense);
-        System.out.println("I have added: " + expense);
-        expenseList.add(expense);
+        System.out.println("I have added: " + entry);
+        entryList.add(entry);
         try {
-            ExpenseListDataManager.appendToExpenseListTextFile(FILE_PATH, expense);
+            EntryListDataManager.appendToEntryListTextFile(FILE_PATH, entry);
         } catch (IOException e) {
             System.out.println("Error trying to update external file!");
         }

@@ -4,56 +4,26 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 public class RecurringExpense extends Expense {
-    private RecurringInterval interval;
+    private Interval interval;
     private LocalDate endDate;
 
-    public RecurringExpense() {
-        super();
-        endDate = LocalDate.parse("2200-12-31");
+    public RecurringExpense(Expense expense) {
+        super(expense.getName(), expense.getDate(), expense.getAmount(), expense.getCategory());
     }
 
-    public RecurringExpense(RecurringExpense e) {
-        setDescription(e.getName());
-        setDate(e.getDate());
-        setAmount(e.getAmount());
-        setCatNum(e.getCatNum());
-        setInterval(e.getInterval());
-        setEndDate(e.getEndDate());
+    public RecurringExpense(String name, LocalDate date, Double amount, ExpenseCategory category,
+                            Interval interval, LocalDate endDate) {
+        super(name, date, amount, category);
+        this.interval = interval;
+        this.endDate = endDate;
     }
 
-    public RecurringExpense(String name, String date, String amount,
-                            String catNum, String interval, String endDate) throws MintException {
-        super(name, date, amount, catNum);
-        try {
-            setInterval(interval);
-            setEndDate(LocalDate.parse(endDate));
-        } catch (MintException e) {
-            throw new MintException(e.getMessage());
-        }
-    }
-
-    public RecurringInterval getInterval() {
+    public Interval getInterval() {
         return interval;
     }
 
-    public void setInterval(RecurringInterval interval) {
+    public void setInterval(Interval interval) {
         this.interval = interval;
-    }
-
-    public void setInterval(String interval) throws MintException {
-        switch (interval.toUpperCase()) {
-        case "WEEK":
-            this.interval = RecurringInterval.WEEK;
-            break;
-        case "MONTH":
-            this.interval = RecurringInterval.MONTH;
-            break;
-        case "YEAR":
-            this.interval = RecurringInterval.YEAR;
-            break;
-        default:
-            throw new MintException("You entered invalid interval");
-        }
     }
 
     public LocalDate getEndDate() {
@@ -64,19 +34,16 @@ public class RecurringExpense extends Expense {
         this.endDate = endDate;
     }
 
+    @Override
     public String toString() {
-        return getCat() + " | " + getInterval().label + " | " + getDate() + " | "
-                + getName() + " | $" + String.format("%,.2f", getAmount());
-    }
-
-    public String viewToString() {
-        return getCatIndent() + "| " + getInterval().label + " | " + getDate() + " | "
+        return getCategory() + " | " + getInterval().label + " | " + getDate() + " | "
                 + getName() + " | $" + String.format("%,.2f", getAmount());
     }
 
     //@@author nipafx-reusedS
     //Reused from https://www.sitepoint.com/implement-javas-equals-method-correctly/
     //with minor modifications
+    @Override
     public boolean equals(Object object) {
         if (this == object) {
             return true;
@@ -89,10 +56,10 @@ public class RecurringExpense extends Expense {
         }
 
         RecurringExpense recurringExpense = (RecurringExpense) object;
-        boolean isNameEqual = Objects.equals(getName(),recurringExpense.getName());
+        boolean isNameEqual = Objects.equals(getName(), recurringExpense.getName());
         boolean isDateEqual = Objects.equals(getDate(), recurringExpense.getDate());
         boolean isAmountEqual = Objects.equals(getAmount(), recurringExpense.getAmount());
-        boolean isCategoryEqual = Objects.equals(getCatNum(), recurringExpense.getCatNum());
+        boolean isCategoryEqual = Objects.equals(getCategory(), recurringExpense.getCategory());
         boolean isIntervalEqual = Objects.equals(interval, recurringExpense.interval);
         return isNameEqual && isDateEqual && isAmountEqual && isCategoryEqual && isIntervalEqual;
     }

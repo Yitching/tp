@@ -1,12 +1,12 @@
 package seedu.duke.parser;
 
-import seedu.duke.Expense;
+import seedu.duke.Interval;
 import seedu.duke.MintException;
-import seedu.duke.RecurringExpense;
 import seedu.duke.Ui;
 
 import java.io.File;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,6 +18,11 @@ public class ValidityChecker {
     private static Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
     public static final String FILE_PATH = "data" + File.separator + "Mint.txt";
 
+    public static DateTimeFormatter dateFormatter
+            = DateTimeFormatter.ofPattern("[yyyy-MM-dd][yyyy-M-dd][yyyy-MM-d][yyyy-M-d]"
+            + "[dd-MM-yyyy][d-MM-yyyy][d-M-yyyy][dd-M-yyyy]"
+            + "[dd MMM yyyy][d MMM yyyy][dd MMM yy][d MMM yy]");
+
     static void checkEmptyName(Parser parser) throws MintException {
         boolean hasEmptyName = parser.name.equals(Parser.STRING_EMPTY);
         if (hasEmptyName) {
@@ -28,7 +33,7 @@ public class ValidityChecker {
 
     static void checkInvalidAmount(Parser parser) throws MintException {
         try {
-            Double.parseDouble(parser.amount);
+            Double.parseDouble(parser.amountStr);
         } catch (NumberFormatException e) {
             logger.log(Level.INFO, "User entered invalid amount");
             throw new MintException(MintException.ERROR_INVALID_AMOUNT);
@@ -37,16 +42,17 @@ public class ValidityChecker {
 
     static void checkInvalidDate(Parser parser) throws MintException {
         try {
-            LocalDate.parse(parser.date, Expense.dateFormatter);
+            LocalDate.parse(parser.dateStr, dateFormatter);
         } catch (DateTimeParseException e) {
             logger.log(Level.INFO, "User entered invalid date");
             throw new MintException(MintException.ERROR_INVALID_DATE);
         }
     }
 
+
     static void checkInvalidCatNum(Parser parser) throws MintException {
         try {
-            int catNumInt = Integer.parseInt(parser.catNum);
+            int catNumInt = Integer.parseInt(parser.catNumStr);
             if (catNumInt < Parser.CAT_NUM_FOOD_INT || catNumInt > Parser.CAT_NUM_OTHERS_INT) {
                 throw new MintException(MintException.ERROR_INVALID_CATNUM);
             }
@@ -56,13 +62,12 @@ public class ValidityChecker {
         }
     }
 
-    static void checkInvalidInterval(Parser parser) throws MintException {
+    private static void checkInvalidInterval(Parser parser) throws MintException {
         try {
-            RecurringExpense expense = new RecurringExpense();
-            expense.setInterval(parser.interval);
-        } catch (MintException e) {
+            Interval.valueOf(parser.interval);
+        } catch (IllegalArgumentException e) {
             logger.log(Level.INFO, "User entered invalid interval");
-            throw new MintException(e.getMessage());
+            throw new MintException("Please enter valid interval: MONTH, YEAR");
         }
     }
 
@@ -113,6 +118,9 @@ public class ValidityChecker {
         }
         return validTags;
     }
+
+
+
 
     static ArrayList<String> checkExistenceAndValidityOfTags(Parser parser, String userInput) throws MintException {
         try {

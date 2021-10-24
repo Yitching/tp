@@ -1,7 +1,6 @@
 package seedu.duke;
 
 import seedu.duke.parser.Parser;
-import seedu.duke.storage.ExpenseListDataManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,11 +32,6 @@ public class ExpenseList {
     private static Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
     public static final String FILE_PATH = "data" + File.separator + "Mint.txt";
 
-    private boolean isCurrentMonthExpense(Expense expense) {
-        return expense.getDate().getMonthValue() == LocalDate.now().getMonthValue()
-                && expense.getDate().getYear() == LocalDate.now().getYear();
-    }
-
     //    public void addExpense(Expense expense) {
     //        addExpense(expense.getName(), expense.getDate().toString(),
     //                Double.toString(expense.getAmount()), Integer.toString(expense.getCatNum()));
@@ -59,32 +53,31 @@ public class ExpenseList {
     //        }
     //    }
 
-    public static ArrayList<Expense> filterExpenseByKeywords(ArrayList<String> tags, String name,
-                                                      String date, String amount, String catNum,
-                                                      ArrayList<Expense> expenseList) throws MintException {
-        ArrayList<Expense> filteredList = new ArrayList<>(expenseList);
-        for (String tag : tags) {
-            switch (tag) {
-            case "n/":
-                filteredList = Filter.filterExpenseByName(name, filteredList);
-                break;
-            case "d/":
-                filteredList = Filter.filterExpenseByDate(date, filteredList);
-                break;
-            case "a/":
-                filteredList = Filter.filterExpenseByAmount(amount, filteredList);
-                break;
-            case "c/":
-                filteredList = Filter.filterExpenseByCatNum(catNum, filteredList);
-                break;
-            default:
-                throw new MintException("Unable to locate tag");
-            }
-        }
-        return filteredList;
-    }
+    //    public static ArrayList<Expense> filterExpenseByKeywords(ArrayList<String> tags,Entry entry,
+    //                                   ArrayList<Expense> expenseList) throws MintException {
+    //
+    //        ArrayList<Expense> filteredList = new ArrayList<>(expenseList);
+    //        for (String tag : tags) {
+    //            switch (tag) {
+    //            case "n/":
+    //                filteredList = Filter.filterExpenseByName(entry.getName(), filteredList);
+    //                break;
+    //            case "d/":
+    //                filteredList = Filter.filterExpenseByDate(entry.getDate(), filteredList);
+    //                break;
+    //            case "a/":
+    //                filteredList = Filter.filterExpenseByAmount(entry.getAmount(), filteredList);
+    //                break;
+    //            case "c/":
+    //                filteredList = Filter.filterExpenseByCategory(entry.getCategory(), filteredList);
+    //                break;
+    //            default:
+    //                throw new MintException("Unable to locate tag");
+    //            }
+    //        }
+    //        return filteredList;
+    //    }
 
-    // MOVED
     //    public void deleteExpenseByKeywords(ArrayList<String> tags, String name,
     //                                 String date, String amount, String catNum) throws MintException {
     //        try {
@@ -110,35 +103,35 @@ public class ExpenseList {
     //        }
     //    }
 
-    // Common method
-    public static Expense chooseExpenseByKeywords(ArrayList<String> tags, boolean isDelete, String name,
-                                           String date, String amount, String catNum,
-                                           ArrayList<Expense> expenseList) throws MintException {
-        ArrayList<Expense> filteredList = filterExpenseByKeywords(tags, name, date, amount, catNum, expenseList);
-        Expense expense = null;
-        if (filteredList.size() == 0) {
-            throw new MintException(MintException.ERROR_EXPENSE_NOT_IN_LIST);
-        } else if (filteredList.size() == 1) {
-            Expense onlyExpense = filteredList.get(0);
-            if (Ui.isConfirmedToDeleteOrEdit(onlyExpense, isDelete)) {
-                expense = onlyExpense;
-            }
-            return expense;
-        }
+    //    //    Common method
+    //     public static Expense chooseExpenseByKeywords(ArrayList<String> tags, boolean isDelete, String name,
+    //                                              String date, String amount, String catNum,
+    //                                              ArrayList<Expense> expenseList) throws MintException {
+    //    ArrayList<Expense> filteredList = filterExpenseByKeywords(tags, name, date, amount, catNum, expenseList);
+    //    Expense expense = null;
+    //    if (filteredList.size() == 0) {
+    //        throw new MintException(MintException.ERROR_EXPENSE_NOT_IN_LIST);
+    //    } else if (filteredList.size() == 1) {
+    //        Expense onlyExpense = filteredList.get(0);
+    //        if (Ui.isConfirmedToDeleteOrEdit(onlyExpense, isDelete)) {
+    //            expense = onlyExpense;
+    //        }
+    //        return expense;
+    //    }
+    //
+    //    Ui.viewGivenList(filteredList);
+    //    try {
+    //        int index = Ui.chooseItemToDeleteOrEdit(filteredList, isDelete);
+    //        if (index >= 0) {
+    //            expense = filteredList.get(index);
+    //        }
+    //    } catch (MintException e) {
+    //        throw new MintException(e.getMessage());
+    //    }
+    //    return expense;
+    //}
 
-        Ui.viewGivenList(filteredList);
-        try {
-            int index = Ui.chooseItemToDeleteOrEdit(filteredList, isDelete);
-            if (index >= 0) {
-                expense = filteredList.get(index);
-            }
-        } catch (MintException e) {
-            throw new MintException(e.getMessage());
-        }
-        return expense;
-    }
 
-    // MOVED
     //    public void deleteExpense(Expense expense) throws MintException {
     //        deleteExpense(expense.getName(), expense.getDate().toString(),
     //                Double.toString(expense.getAmount()), Integer.toString(expense.getCatNum()));
@@ -252,6 +245,7 @@ public class ExpenseList {
         return total;
     }
 
+
     //    public void sort(ArrayList<Expense> outputArray, String sortType) throws MintException {
     //        assert sortType != null : "sortType should have a command";
     //        switch (sortType) {
@@ -314,11 +308,11 @@ public class ExpenseList {
 
     // common method
     public static String overWriteString(Expense expense) {
-        return expense.getCatNum() + "|" + expense.getDate() + "|" + expense.getName()
+        return expense.getCategory() + "|" + expense.getDate() + "|" + expense.getName()
                 + "|" + expense.getAmount();
     }
 
-    // MOVED
+
     //    private void editSpecifiedEntry(String userInput, int indexToBeChanged, Expense expense)
     //    throws MintException {
     //        Parser parser = new Parser();

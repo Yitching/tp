@@ -1,20 +1,19 @@
 package seedu.duke;
 
-
 import java.time.LocalDate; // import the LocalDate class
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
-public class Expense extends Entry {
-    protected ExpenseCategory category;
+public class Income extends Entry {
+    protected IncomeCategory category;
 
-    public Expense (String name, LocalDate date, double amount, ExpenseCategory category) {
+    public Income(String name, LocalDate date, double amount, IncomeCategory category) {
         super(name, date, amount);
         this.category = category;
-        this.type = Type.Expense;
+        this.type = Type.Income;
     }
 
-    public ExpenseCategory getCategory () {
+    public IncomeCategory getCategory () {
         return category;
     }
 
@@ -31,14 +30,13 @@ public class Expense extends Entry {
         return Ui.getIndent(leftIndent, rightIndent, getCategory().toString()).toString();
     }
 
-    public void setCategory (ExpenseCategory category) {
+    public void setCategory (IncomeCategory category) {
         this.category = category;
     }
 
     public String toString () {
-        return getType() + " | " + getCategoryIndented() + " | " + getDate() + " | "
-                + getNameIndented() + " |-$" + String.format("%,.2f", getAmount());
-
+        return getType() + "  | " + getCategoryIndented() + " | " + getDate() + " | "
+                + getNameIndented() + " | $" + String.format("%,.2f", getAmount());
     }
 
     @Override

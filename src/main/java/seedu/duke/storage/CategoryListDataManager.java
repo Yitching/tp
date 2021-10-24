@@ -1,6 +1,5 @@
 package seedu.duke.storage;
 
-import seedu.duke.CategoryList;
 import seedu.duke.MintException;
 
 import java.io.File;
@@ -48,7 +47,7 @@ public class CategoryListDataManager extends DataManagerActions {
     private void setContentToBeChanged(int catNum, ArrayList<String> fileContent, String categoryToBeChanged) {
         for (int i = 0; i < fileContent.size(); i++) {
             if (fileContent.get(i).contains(categoryToBeChanged)) {
-                fileContent.set(i, CATEGORY_TAG + catNum + TEXT_DELIMITER + CategoryList.getLimitIndented(catNum));
+                fileContent.set(i, CATEGORY_TAG + catNum + TEXT_DELIMITER + catNum);
                 break;
             }
         }
@@ -58,7 +57,7 @@ public class CategoryListDataManager extends DataManagerActions {
         FileWriter fileWriter = new FileWriter(CATEGORY_FILE_PATH, true);
         for (int catNum = 0; catNum < NUMBER_OF_CATEGORIES; catNum++) {
             fileWriter.write(CATEGORY_TAG + catNum + TEXT_DELIMITER
-                    + CategoryList.getLimitIndented(catNum) + System.lineSeparator());
+                    + catNum + System.lineSeparator());
             fileWriter.flush();
         }
         fileWriter.close();
@@ -71,15 +70,15 @@ public class CategoryListDataManager extends DataManagerActions {
             //c/0| Not Set
             String fieldsInTextFile = scanner.nextLine();
             String[] params = fieldsInTextFile.split("\\|");
-            String catNum = params[0].replaceAll(REGEX_TO_REPLACE,"").trim();
-            String limit = params[1].replaceAll(REGEX_TO_REPLACE,"").trim();
-            try {
-                if (!limit.equals("")) {
-                    CategoryList.setLimit(catNum, limit);
-                }
-            } catch (MintException e) {
-                e.printStackTrace();
-            }
+            // String catNum = params[0].replaceAll(REGEX_TO_REPLACE, "").trim();
+            // String limit = params[1].replaceAll(REGEX_TO_REPLACE, "").trim();
+            // try {
+            // if (!limit.equals("")) {
+            //      CategoryList.setLimit(catNum, limit);
+            //                }
+            //            } catch (MintException e) {
+            //                e.printStackTrace();
+            //            }
         }
     }
     

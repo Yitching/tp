@@ -1,39 +1,42 @@
 package seedu.duke;
 
+import seedu.duke.parser.ValidityChecker;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
 public class Filter {
-    public static ArrayList<Expense> filterExpenseByName(String name, ArrayList<Expense> listToFilter) {
-        ArrayList<Expense> filteredArrayList = listToFilter
+    public static ArrayList<Entry> filterEntryByName(String name, ArrayList<Entry> listToFilter) {
+        ArrayList<Entry> filteredArrayList = listToFilter
                 .stream()
                 .filter(e -> e.getName().toLowerCase(Locale.ROOT).contains(name.toLowerCase(Locale.ROOT)))
                 .collect(Collectors.toCollection(ArrayList::new));
         return filteredArrayList;
     }
 
-    public static ArrayList<Expense> filterExpenseByDate(String date, ArrayList<Expense> listToFilter) {
-        ArrayList<Expense> filteredArrayList = listToFilter
+    public static ArrayList<Entry> filterEntryByDate(LocalDate date, ArrayList<Entry> listToFilter) {
+        ArrayList<Entry> filteredArrayList = listToFilter
                 .stream()
-                .filter(e -> e.getDate().equals(LocalDate.parse(date, Expense.dateFormatter)))
+                .filter(e -> e.getDate().equals(date))
                 .collect(Collectors.toCollection(ArrayList::new));
         return filteredArrayList;
     }
 
-    public static ArrayList<Expense> filterExpenseByAmount(String amount, ArrayList<Expense> listToFilter) {
-        ArrayList<Expense> filteredArrayList = listToFilter
+    public static ArrayList<Entry> filterEntryByAmount(Double amount, ArrayList<Entry> listToFilter) {
+        ArrayList<Entry> filteredArrayList = listToFilter
                 .stream()
-                .filter(e -> e.getAmount() == Double.parseDouble(amount))
+                .filter(e -> e.getAmount() == amount)
                 .collect(Collectors.toCollection(ArrayList::new));
         return filteredArrayList;
     }
 
-    public static ArrayList<Expense> filterExpenseByCatNum(String catNum, ArrayList<Expense> listToFilter) {
-        ArrayList<Expense> filteredArrayList = listToFilter
+
+    public static ArrayList<Entry> filterEntryByCategory(Enum category, ArrayList<Entry> listToFilter) {
+        ArrayList<Entry> filteredArrayList = listToFilter
                 .stream()
-                .filter(e -> e.getCatNum() == Integer.parseInt(catNum))
+                .filter(e -> e.getCategory().equals(category))
                 .collect(Collectors.toCollection(ArrayList::new));
         return filteredArrayList;
     }
