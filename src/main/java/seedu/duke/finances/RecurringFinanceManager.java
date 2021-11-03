@@ -32,37 +32,38 @@ public class RecurringFinanceManager extends FinanceManager {
         recurringEntryList.add(entry);
     }
 
+    //    @Override
+    //    public Entry chooseEntryByKeywords(ArrayList<String> tags, boolean isDelete,
+    //                                       Entry query) throws MintException {
+    //        ArrayList<Entry> filteredList = filterEntryByKeywords(tags, query);
+    //        RecurringEntry entry;
+    //        if (filteredList.size() == 0) {
+    //            throw new MintException(MintException.ERROR_EXPENSE_NOT_IN_LIST);
+    //        } else if (filteredList.size() == 1) {
+    //            RecurringEntry onlyExpense = (RecurringEntry) filteredList.get(0);
+    //            if (Ui.isConfirmedToDeleteOrEdit(onlyExpense, isDelete)) {
+    //                entry = onlyExpense;
+    //            } else {
+    //                throw new MintException("Ok. I have cancelled the process.");
+    //            }
+    //            return entry;
+    //        }
+    //
+    //        Ui.viewGivenList(filteredList);
+    //        try {
+    //            int index = Ui.chooseItemToDeleteOrEdit(filteredList, isDelete);
+    //            if (index >= 0) {
+    //                entry = (RecurringEntry) filteredList.get(index);
+    //            } else {
+    //                throw new MintException("Ok. I have cancelled the process.");
+    //            }
+    //        } catch (MintException e) {
+    //            throw new MintException(e.getMessage());
+    //        }
+    //        return entry;
+    //    }
+
     @Override
-    public Entry chooseEntryByKeywords(ArrayList<String> tags, boolean isDelete,
-                                       Entry query) throws MintException {
-        ArrayList<Entry> filteredList = filterEntryByKeywords(tags, query);
-        RecurringEntry entry;
-        if (filteredList.size() == 0) {
-            throw new MintException(MintException.ERROR_EXPENSE_NOT_IN_LIST);
-        } else if (filteredList.size() == 1) {
-            RecurringEntry onlyExpense = (RecurringEntry) filteredList.get(0);
-            if (Ui.isConfirmedToDeleteOrEdit(onlyExpense, isDelete)) {
-                entry = onlyExpense;
-            } else {
-                throw new MintException("Ok. I have cancelled the process.");
-            }
-            return entry;
-        }
-
-        Ui.viewGivenList(filteredList);
-        try {
-            int index = Ui.chooseItemToDeleteOrEdit(filteredList, isDelete);
-            if (index >= 0) {
-                entry = (RecurringEntry) filteredList.get(index);
-            } else {
-                throw new MintException("Ok. I have cancelled the process.");
-            }
-        } catch (MintException e) {
-            throw new MintException(e.getMessage());
-        }
-        return entry;
-    }
-
     public ArrayList<Entry> filterEntryByKeywords(ArrayList<String> tags,
                                                   Entry query) throws MintException {
         ArrayList<Entry> filteredList = new ArrayList<>(recurringEntryList);
@@ -132,28 +133,23 @@ public class RecurringFinanceManager extends FinanceManager {
                     String name = nonEmptyNewDescription(word);
                     entryFields.put("name", name);
                     count++;
-                }
-                if (word.contains(DATE_SEPARATOR)) {
+                } else if (word.contains(DATE_SEPARATOR)) {
                     String dateStr = word.substring(word.indexOf(DATE_SEPARATOR) + LENGTH_OF_SEPARATOR).trim();
                     entryFields.put("date", dateStr);
                     count++;
-                }
-                if (word.contains(AMOUNT_SEPARATOR)) {
+                } else if (word.contains(AMOUNT_SEPARATOR)) {
                     String amountStr = word.substring(word.indexOf(AMOUNT_SEPARATOR) + LENGTH_OF_SEPARATOR).trim();
                     entryFields.put("amount",amountStr);
                     count++;
-                }
-                if (word.contains(CATEGORY_SEPARATOR)) {
+                } else if (word.contains(CATEGORY_SEPARATOR)) {
                     String catNumStr = word.substring(word.indexOf(CATEGORY_SEPARATOR) + LENGTH_OF_SEPARATOR).trim();
                     entryFields.put("catNum", catNumStr);
                     count++;
-                }
-                if (word.contains(END_DATE_SEPARATOR)) {
+                } else if (word.contains(END_DATE_SEPARATOR)) {
                     String endDateStr = word.substring(word.indexOf(END_DATE_SEPARATOR) + LENGTH_OF_SEPARATOR).trim();
                     entryFields.put("endDate", endDateStr);
                     count++;
-                }
-                if (word.contains(INTERVAL_SEPARATOR)) {
+                } else if (word.contains(INTERVAL_SEPARATOR)) {
                     String intervalStr = word.substring(word.indexOf(INTERVAL_SEPARATOR) + LENGTH_OF_SEPARATOR).trim();
                     entryFields.put("interval", intervalStr);
                     count++;

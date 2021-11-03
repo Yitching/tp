@@ -8,7 +8,6 @@ import seedu.duke.parser.ValidityChecker;
 import seedu.duke.utility.Filter;
 import seedu.duke.utility.Ui;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -16,6 +15,7 @@ import java.util.HashMap;
 public class NormalFinanceManager extends FinanceManager {
 
     public ArrayList<Entry> entryList;
+    public static boolean hasOneMatch;
 
     public NormalFinanceManager() {
         this.entryList = new ArrayList<>();
@@ -29,37 +29,39 @@ public class NormalFinanceManager extends FinanceManager {
         return entryList;
     }
 
+    //    @Override
+    //    public Entry chooseEntryByKeywords(ArrayList<String> tags, boolean isDelete, Entry query)
+    //    throws MintException {
+    //        ArrayList<Entry> filteredList = filterEntryByKeywords(tags, query);
+    //        Entry entry;
+    //        if (filteredList.size() == 0) {
+    //            throw new MintException(MintException.ERROR_EXPENSE_NOT_IN_LIST);
+    //        } else if (filteredList.size() == 1) {
+    //            Entry onlyEntry = filteredList.get(0);
+    //            if (Ui.isConfirmedToDeleteOrEdit(onlyEntry, isDelete)) {
+    //                entry = onlyEntry;
+    //            } else {
+    //                throw new MintException("Ok. I have cancelled the process.");
+    //            }
+    //            return entry;
+    //        }
+    //
+    //        Ui.viewGivenList(filteredList);
+    //
+    //        try {
+    //            int index = Ui.chooseItemToDeleteOrEdit(filteredList, isDelete);
+    //            if (index >= 0) {
+    //                entry = filteredList.get(index);
+    //            } else {
+    //                throw new MintException("Ok. I have cancelled the process.");
+    //            }
+    //        } catch (MintException e) {
+    //            throw new MintException(e.getMessage());
+    //        }
+    //        return entry;
+    //    }
+
     @Override
-    public Entry chooseEntryByKeywords(ArrayList<String> tags, boolean isDelete, Entry query) throws MintException {
-        ArrayList<Entry> filteredList = filterEntryByKeywords(tags, query);
-        Entry entry;
-        if (filteredList.size() == 0) {
-            throw new MintException(MintException.ERROR_EXPENSE_NOT_IN_LIST);
-
-        } else if (filteredList.size() == 1) {
-            Entry onlyEntry = filteredList.get(0);
-            if (Ui.isConfirmedToDeleteOrEdit(onlyEntry, isDelete)) {
-                entry = onlyEntry;
-            } else {
-                throw new MintException("Ok. I have cancelled the process.");
-            }
-            return entry;
-        }
-
-        Ui.viewGivenList(filteredList);
-        try {
-            int index = Ui.chooseItemToDeleteOrEdit(filteredList, isDelete);
-            if (index >= 0) {
-                entry = filteredList.get(index);
-            } else {
-                throw new MintException("Ok. I have cancelled the process.");
-            }
-        } catch (MintException e) {
-            throw new MintException(e.getMessage());
-        }
-        return entry;
-    }
-
     public ArrayList<Entry> filterEntryByKeywords(ArrayList<String> tags, Entry query) throws MintException {
         ArrayList<Entry> filteredList = new ArrayList<>(entryList);
         for (String tag : tags) {
@@ -123,18 +125,15 @@ public class NormalFinanceManager extends FinanceManager {
                     count++;
                     String name = nonEmptyNewDescription(word);
                     entryFields.put("name", name);
-                }
-                if (word.contains(DATE_SEPARATOR)) {
+                } else if (word.contains(DATE_SEPARATOR)) {
                     count++;
                     String dateStr = word.substring(word.indexOf(DATE_SEPARATOR) + LENGTH_OF_SEPARATOR).trim();
                     entryFields.put("date", dateStr);
-                }
-                if (word.contains(AMOUNT_SEPARATOR)) {
+                } else if (word.contains(AMOUNT_SEPARATOR)) {
                     count++;
                     String amountStr = word.substring(word.indexOf(AMOUNT_SEPARATOR) + LENGTH_OF_SEPARATOR).trim();
                     entryFields.put("amount",amountStr);
-                }
-                if (word.contains(CATEGORY_SEPARATOR)) {
+                } else if (word.contains(CATEGORY_SEPARATOR)) {
                     count++;
                     String catNumStr = word.substring(word.indexOf(CATEGORY_SEPARATOR) + LENGTH_OF_SEPARATOR).trim();
                     entryFields.put("catNum", catNumStr);

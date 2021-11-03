@@ -25,7 +25,8 @@ public class ValidityChecker {
     public static final String FILE_PATH = "data" + File.separator + "Mint.txt";
     public static final String ERROR_INVALID_NUMBER = "Invalid number entered! Unable to edit expense.";
     public static final Pattern doublePattern = Pattern.compile("\\d+(\\.\\d+)?");
-    public static final String userTagNoSpace = "(.*)[0-9a-zA-Z/\\-.]{2}/(.*)";
+    public static final String userTagNoSpace = "(.*)[0-9a-zA-Z/\\-.][a-zA-Z]/(.*)";
+    public static final String invalidForwardSlash = "(.*)[0-9a-zA-Z/\\-.][0-9/\\-.]/(.*)";
     public static final String forwardSlashWithoutTagType = "(.*)[ ]/(.*)";
     public static final double AMOUNT_LIMIT = 1000000.0;
 
@@ -253,6 +254,9 @@ public class ValidityChecker {
     public static void checkTagsFormatSpacing(String userInput) throws MintException {
         if (userInput.matches(userTagNoSpace)) {
             throw new MintException(MintException.ERROR_NO_SPACE_BEFORE_TAGS);
+        }
+        if (userInput.matches(invalidForwardSlash)) {
+            throw new MintException(MintException.ERROR_INVALID_FORWARD_SLASH);
         }
         if (userInput.matches(forwardSlashWithoutTagType)) {
             throw new MintException(MintException.ERROR_MISSING_TAG_TYPE);

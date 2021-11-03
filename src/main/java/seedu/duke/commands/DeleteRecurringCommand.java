@@ -29,10 +29,14 @@ public class DeleteRecurringCommand extends Command {
             NormalListDataManager normalListDataManager, DataManagerActions dataManagerActions,
             RecurringListDataManager recurringListDataManager, BudgetDataManager budgetDataManager, Ui ui) {
         try {
-            Entry deletedEntry = recurringFinanceManager.deleteEntryByKeywords(tags, query);
-            String stringToDelete = RecurringFinanceManager.overWriteString((RecurringEntry) deletedEntry);
-            recurringListDataManager.deleteLineInTextFile(stringToDelete);
-            ui.printEntryDeleted(deletedEntry);
+            DeleteCommand dummyDeleteCommand = new DeleteCommand(tags, query);
+            Entry entryToDelete = dummyDeleteCommand.determineEntryToDelete(recurringFinanceManager, ui);
+            if (entryToDelete != null) {
+                recurringFinanceManager.deleteEntry(entryToDelete);
+                String stringToDelete = RecurringFinanceManager.overWriteString((RecurringEntry) entryToDelete);
+                recurringListDataManager.deleteLineInTextFile(stringToDelete);
+                ui.printEntryDeleted(entryToDelete);
+            }
         } catch (MintException e) {
             ui.printError(e);
         }

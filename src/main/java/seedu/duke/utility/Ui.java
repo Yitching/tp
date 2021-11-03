@@ -39,7 +39,10 @@ public class Ui {
     }
 
     public String readUserInput() {
-        return in.nextLine().trim();
+        if (in.hasNextLine()) {
+            return in.nextLine().trim();
+        }
+        return null;
     }
 
     protected static final String INDENT = "    ";
@@ -140,15 +143,6 @@ public class Ui {
         }
     }
 
-    public static void viewGivenListAndTotal(ArrayList<Entry> list, double totalAmount) {
-        System.out.println("Here is the list of your entries:");
-        for (int i = 0; i < list.size(); i++) {
-            System.out.println(INDENT + (i + 1) + "  " + list.get(i).toString());
-        }
-        System.out.println(LINE);
-        System.out.println(INDENT + "Total: " + totalAmount);
-    }
-
     public static int chooseItemToDeleteOrEdit(ArrayList<Entry> filteredList, boolean isDelete) throws MintException {
         if (isDelete) {
             System.out.println("Enter the index of the item you want to delete." + CANCEL_MESSAGE);
@@ -160,19 +154,23 @@ public class Ui {
         int index = 0;
         boolean proceedToDelete = false;
         while (!proceedToDelete) {
-            String userInput = in.nextLine();
-            if (userInput.trim().equals("cancel")) {
-                return INDEX_CANCEL;
-            }
-            try {
-                index = Integer.parseInt(userInput);
+            if (in.hasNextLine()) {
+                String userInput = in.nextLine();
+                if (userInput.trim().equals("cancel")) {
+                    return INDEX_CANCEL;
+                }
+                try {
+                    index = Integer.parseInt(userInput.trim());
+                } catch (NumberFormatException e) {
+                    System.out.println(MintException.ERROR_INDEX_INVALID_NUMBER + CANCEL_MESSAGE);
+                }
                 if (index < 1 || index > filteredList.size()) {
                     System.out.println(MintException.ERROR_INDEX_OUT_OF_BOUND + CANCEL_MESSAGE);
                 } else {
                     proceedToDelete = true;
                 }
-            } catch (NumberFormatException e) {
-                System.out.println(MintException.ERROR_INDEX_INVALID_NUMBER + CANCEL_MESSAGE);
+            } else {
+                throw new MintException("no new line found");
             }
         }
         return index - 1;
@@ -197,7 +195,7 @@ public class Ui {
 
     public static boolean isConfirmed() {
         Scanner in = new Scanner(System.in);
-        while (true) {
+        while (in.hasNextLine()) {
             String userInput = in.nextLine();
             switch (userInput.trim()) {
             case "y":
@@ -210,6 +208,7 @@ public class Ui {
                 break;
             }
         }
+        return false;
     }
 
     public static void deleteAllConfirmation() {
@@ -218,6 +217,14 @@ public class Ui {
 
     public static void deleteAborted() {
         System.out.println("Delete aborted.");
+    }
+
+    public void printNoMatchingEntryMessage() {
+        System.out.println(MintException.ERROR_EXPENSE_NOT_IN_LIST);
+    }
+
+    public void printCancelMessage() {
+        System.out.println("Ok. I have cancelled the process.");
     }
 
     public static void printOutcomeOfEditAttempt() {
@@ -431,36 +438,42 @@ public class Ui {
         System.out.printf("Budget for %s set to $%.2f\n", category, amount);
     }
 
-    public void printBudgetBreakdown(ArrayList<Budget> budgetList, ArrayList<Entry> entryList) {
+    public void printBudgetBreakdown(ArrayList<Budget> budgetList, ArrayList<Entry> entries,
+            ArrayList<Entry> recurringEntries) {
         int maxSpendingLength = MIN_SPENDING_INDENTATION;
         int maxLimitLength = MIN_LIMIT_INDENTATION;
         for (Budget budget : budgetList) {
-            if (String.format("$%,.2f", budget.getMonthlySpending(entryList)).length() > maxSpendingLength) {
-                maxSpendingLength = String.format("$%,.2f", budget.getMonthlySpending(entryList)).length();
+            if (String.format("$%,.2f",
+                    budget.getMonthlySpending(entries, recurringEntries)).length() > maxSpendingLength) {
+                maxSpendingLength = String.format("$%,.2f",
+                        budget.getMonthlySpending(entries, recurringEntries)).length();
             }
             if (String.format("$%,.2f", budget.getLimit()).length() > maxLimitLength) {
                 maxLimitLength = String.format("$%,.2f", budget.getLimit()).length();
             }
         }
-        System.out.println("Here is the budget for the month.");
+        System.out.println("Here is the budget for ." + LocalDate.now().getMonth() + " " + LocalDate.now().getYear());
         System.out.println("    Category     | " + getLeftIndented("Amount", maxSpendingLength)
                 + " | " + getRightIndented("Budget", maxLimitLength) + " | Percentage");
         for (Budget budget : budgetList) {
-            printBudgetIndividualEntry(budget, entryList, maxSpendingLength, maxLimitLength);
+            printBudgetIndividualEntry(budget, entries, recurringEntries, maxSpendingLength, maxLimitLength);
         }
 
     }
 
-    public void printBudgetIndividualEntry(Budget budget, ArrayList<Entry> entryList, int maxSpendingLength,
-                                           int maxLimitLength) {
+    public void printBudgetIndividualEntry(Budget budget, ArrayList<Entry> entries,
+            ArrayList<Entry> recurringEntries, int maxSpendingLength,
+            int maxLimitLength) {
         String categoryIndented = getCategoryIndented(budget.getCategory()).toString();
-        String spending = getLeftIndented(String.format("$%,.2f", budget.getMonthlySpending(entryList)),
+        String spending = getLeftIndented(String.format("$%,.2f",
+                budget.getMonthlySpending(entries, recurringEntries)),
                 maxSpendingLength);
         String limit = budget.getLimit() == 0 ? getRightIndented("Not set", maxLimitLength) :
                 getRightIndented(String.format("$%,.2f", budget.getLimit()), maxLimitLength);
         String percentage = "";
-        if (budget.getLimit() != 0 && budget.getMonthlySpending(entryList) != 0) {
-            percentage = String.format("%,.2f", budget.getMonthlySpending(entryList) / budget.getLimit() * 100) + "%";
+        if (budget.getLimit() != 0 && budget.getMonthlySpending(entries, recurringEntries) != 0) {
+            percentage = String.format("%,.2f",
+                    budget.getMonthlySpending(entries, recurringEntries) / budget.getLimit() * 100) + "%";
         }
         System.out.println(categoryIndented + " | " + spending + " / " + limit + " | " + percentage);
     }

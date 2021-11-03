@@ -3,6 +3,7 @@ package seedu.duke.commands;
 import seedu.duke.budget.BudgetManager;
 import seedu.duke.entries.Entry;
 import seedu.duke.exception.MintException;
+import seedu.duke.finances.FinanceManager;
 import seedu.duke.finances.NormalFinanceManager;
 import seedu.duke.finances.RecurringFinanceManager;
 import seedu.duke.storage.BudgetDataManager;
@@ -16,6 +17,9 @@ import java.util.ArrayList;
 public class DeleteCommand extends Command {
     private final Entry query;
     private final ArrayList<String> tags;
+    public static final int SIZE_NO_MATCH = 0;
+    public static final int SIZE_ONE_MATCH = 1;
+    boolean isDelete = true;
 
     public DeleteCommand(ArrayList<String> tags, Entry query) {
         this.query = query;
@@ -28,12 +32,56 @@ public class DeleteCommand extends Command {
             NormalListDataManager normalListDataManager, DataManagerActions dataManagerActions,
             RecurringListDataManager recurringListDataManager, BudgetDataManager budgetDataManager, Ui ui) {
         try {
-            Entry deletedEntry = normalFinanceManager.deleteEntryByKeywords(tags, query);
-            String stringToDelete = NormalFinanceManager.overWriteString(deletedEntry);
-            normalListDataManager.deleteLineInTextFile(stringToDelete);
-            ui.printEntryDeleted(deletedEntry);
+            Entry entryToDelete = determineEntryToDelete(normalFinanceManager, ui);
+            if (entryToDelete != null) {
+                normalFinanceManager.deleteEntry(entryToDelete);
+                String stringToDelete = NormalFinanceManager.overWriteString(entryToDelete);
+                normalListDataManager.deleteLineInTextFile(stringToDelete);
+                ui.printEntryDeleted(entryToDelete);
+            }
         } catch (MintException e) {
             ui.printError(e);
         }
+    }
+
+    Entry determineEntryToDelete(FinanceManager financeManager, Ui ui) throws MintException {
+        try {
+            ArrayList<Entry> filteredList = financeManager.filterEntryByKeywords(tags, query);
+            switch (filteredList.size()) {
+            case SIZE_NO_MATCH:
+                ui.printNoMatchingEntryMessage();
+                return null;
+            case SIZE_ONE_MATCH:
+                return confirmToDeleteOneMatch(filteredList, ui);
+            default:
+                return confirmToDeleteMultipleMatch(filteredList, ui);
+            }
+        } catch (MintException e) {
+            throw new MintException(e.getMessage());
+        }
+    }
+
+    Entry confirmToDeleteOneMatch(ArrayList<Entry> filteredList, Ui ui) {
+        if (ui.isConfirmedToDeleteOrEdit(filteredList.get(0), isDelete)) {
+            return filteredList.get(0);
+        } else {
+            ui.printCancelMessage();
+            return null;
+        }
+    }
+
+    Entry confirmToDeleteMultipleMatch(ArrayList<Entry> filteredList, Ui ui) {
+        try {
+            ui.viewGivenList(filteredList);
+            int index = ui.chooseItemToDeleteOrEdit(filteredList, isDelete);
+            if (index >= 0) {
+                return filteredList.get(index);
+            } else {
+                ui.printCancelMessage();
+            }
+        } catch (MintException e) {
+            ui.printError(e);
+        }
+        return null;
     }
 }
