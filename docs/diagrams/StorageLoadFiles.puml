@@ -1,0 +1,37 @@
+@startuml
+!include Style.puml
+
+participant ":Duke"       as duke
+participant ":NormalListDataManager" as normalListDataManager
+participant ":DataManagerActions" as dataManagerActions
+
+-> duke : run()
+activate duke
+
+duke -> normalListDataManager : loadPreviousFileContent(entryList:ArrayList<Entry>)
+activate normalListDataManager
+
+normalListDataManager -> normalListDataManager : loadEntryListContents(entryList:ArrayList<Entry>)
+activate normalListDataManager
+
+normalListDataManager -> normalListDataManager : loadEntry(type:String,..., entryList:ArrayList<Entry>)
+
+activate normalListDataManager
+normalListDataManager -> dataManagerActions : createDirectory()
+activate dataManagerActions
+dataManagerActions --> normalListDataManager
+deactivate dataManagerActions
+
+normalListDataManager -> dataManagerActions : createFiles()
+activate dataManagerActions
+dataManagerActions --> normalListDataManager
+deactivate dataManagerActions
+
+return
+return
+return
+return
+
+
+
+@enduml

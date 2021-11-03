@@ -1,0 +1,31 @@
+@startuml
+!include <office/Users/user>
+!include Style.puml
+
+Package "Mint"<<Rectangle>>{
+    Class Ui
+    Class Main
+    Class Parser
+    Class Storage
+    Class Command
+    Class Finances
+    Class Budget
+    Class Utility
+}
+
+Class "<$user>" as User
+Class "<$documents>" as File
+
+User ..> Ui
+Ui -right-> Main
+Main -down-> Parser
+Parser -right-> Command
+Command -down-> Finances
+Command -down-> Budget
+Command --> Ui
+Finances -down-> Storage
+Budget -down-> Storage
+Finances -[hidden]->Utility
+Storage .right>File
+
+@enduml

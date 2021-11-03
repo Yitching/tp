@@ -1,0 +1,12 @@
+add n/Textbook d/2021-12-03 a/15 c/7
+add n/Textbook a/15 d/2021-12-03 c/0
+add a/15 d/2021-12-03 n/Textbook c/0
+add a/20 d/2021-12-03 n/Movie c/1
+edit a/20 d/2021-12-03 n/Movie c/1
+a/40 n/hello
+a/
+c/0
+edit a/40 d/2021-12-03 n/Movie c/2
+add a/15.5 d/2021-12-23 n/Cheese burger c/1
+delete a/15.5 d/2021-12-23 n/Cheese burger c/1
+add n/Chicken Rice a/8.30 c/0

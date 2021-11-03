@@ -1,0 +1,35 @@
+@startuml
+package "Finance" <<Rectangle>> {
+package "finances" <<Rectangle>> {
+abstract class  "FinanceManager"
+class NormalFinanceManager
+class RecurringFinanceManager
+}
+
+package "entries" <<Rectangle>> {
+abstract class Entry
+abstract class RecurringEntry
+class Income
+class Expense
+class RecurringExpense
+class RecurringIncome
+}
+
+RecurringFinanceManager -u-|> FinanceManager
+NormalFinanceManager -u-|> FinanceManager
+
+RecurringEntry -u-|> Entry
+RecurringIncome -u-|> RecurringEntry
+RecurringExpense -u-|> RecurringEntry
+Income -u--|> Entry
+Expense -u--|> Entry
+
+RecurringFinanceManager ----> "*" RecurringIncome
+RecurringFinanceManager ----> "*" RecurringExpense
+NormalFinanceManager ----> "*" Income
+NormalFinanceManager ----> "*" Expense
+
+
+}
+hide members
+@enduml

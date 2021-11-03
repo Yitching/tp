@@ -1,101 +1,30 @@
 package seedu.duke;
 
 import org.junit.jupiter.api.Test;
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
+import seedu.duke.entries.Expense;
+import seedu.duke.entries.ExpenseCategory;
+import seedu.duke.exception.MintException;
+import seedu.duke.finances.NormalFinanceManager;
 import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static seedu.duke.parser.ValidityChecker.dateFormatter;
 
 class AddFunctionTest {
 
-    public static final String LIST_OF_EXPENSES = "Here is the list of your expenses:";
-
     @Test
-    public void addExpense_oneAddition_expectSuccess() throws MintException {
-        LocalDate date = LocalDate.now();
-        ExpenseList expenseList = new ExpenseList();
-        Expense expense = new Expense("burger", "2021-10-10", "10");
-        String expenseName = expense.getName();
-        String expenseDate = expense.getDate().toString();
-        String expenseAmount = Double.toString(expense.getAmount());
-        String expenseCatNum = "1";
-        expenseList.addExpense(expenseName, expenseDate, expenseAmount,expenseCatNum);
-        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
-        System.setOut(new PrintStream(outContent));
-        // After this all System.out.println() statements will come to outContent stream.
-        String[] emptyArray = {"view"};
-        expenseList.viewExpense(emptyArray);
-        String expectedOutput  = LIST_OF_EXPENSES + System.lineSeparator()
-                + "      Food       | 2021-10-10 | burger | $10.00" + System.lineSeparator();
-        assertEquals(expectedOutput, outContent.toString());
-    }
-
-    @Test
-    public void addExpense_twoAdditions_expectSuccess() throws MintException {
-        LocalDate date = LocalDate.now();
-        ExpenseList expenseList = new ExpenseList();
-        Expense expenseFood = new Expense("burger", "2021-10-10", "10", "1");
-        Expense expenseEntertainment = new Expense("movie", "2021-10-10", "13", "2");
-        String foodExpenseName = expenseFood.getName();
-        String foodExpenseDate = expenseFood.getDate().toString();
-        String foodExpenseAmount = Double.toString(expenseFood.getAmount());
-        String entExpenseName = expenseEntertainment.getName();
-        String entDate = expenseEntertainment.getDate().toString();
-        String entExpenseAmount = Double.toString(expenseEntertainment.getAmount());
-        String foodCatNum = "1";
-        String entCatNum = "2";
-        expenseList.addExpense(foodExpenseName, foodExpenseDate, foodExpenseAmount, foodCatNum);
-        expenseList.addExpense(entExpenseName, entDate, entExpenseAmount, entCatNum);
-        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
-        System.setOut(new PrintStream(outContent));
-        // After this all System.out.println() statements will come to outContent stream.
-        String[] emptyArray = {"view"};
-        expenseList.viewExpense(emptyArray);
-        String expectedOutput  = LIST_OF_EXPENSES + System.lineSeparator()
-                + "      Food       | 2021-10-10 | burger | $10.00" + System.lineSeparator()
-                + " Entertainment   | 2021-10-10 | movie | $13.00" + System.lineSeparator();
-        assertEquals(expectedOutput, outContent.toString());
-    }
-
-    @Test
-    public void addExpense_wrongAmountFormat_expectErrorMessage() throws MintException {
-        ExpenseList expenseList = new ExpenseList();
-        Parser parser = new Parser();
-
-        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
-        System.setOut(new PrintStream(outContent));
-
-        parser.executeCommand("add n/burger d/2021-12-23 a/ABCD c/1", expenseList);
-        String expectedOutput  = "Please enter a valid amount!" + System.lineSeparator();
-        assertEquals(expectedOutput, outContent.toString());
-    }
-
-
-    @Test
-    public void addExpense_wrongDateFormat_expectErrorMessage() throws MintException {
-        ExpenseList expenseList = new ExpenseList();
-        Parser parser = new Parser();
-
-        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
-        System.setOut(new PrintStream(outContent));
-
-        parser.executeCommand("add n/movie d/ABCD a/10 c/3", expenseList);
-        String expectedOutput  = "Please enter a valid date!" + System.lineSeparator();
-        assertEquals(expectedOutput, outContent.toString());
-
-
-    }
-
-    @Test
-    public void addExpense_noName_expectErrorMessage() throws MintException {
-        ExpenseList expenseList = new ExpenseList();
-        Parser parser = new Parser();
-
-        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
-        System.setOut(new PrintStream(outContent));
-
-        parser.executeCommand("add n/ d/2021-01-01 a/10 c/3", expenseList);
-        String expectedOutput = "Please add the description of the item!" + System.lineSeparator();
-        assertEquals(expectedOutput, outContent.toString());
+    void addExpense_allFieldsValid_success() {
+        String name = "Samurai Burger";
+        LocalDate date = LocalDate.parse("2021-02-01", dateFormatter);
+        Double amount = Double.parseDouble("7.50");
+        ExpenseCategory category = ExpenseCategory.FOOD;
+        Expense expense = new Expense(name, date, amount, category);
+        NormalFinanceManager normalFinanceManager = new NormalFinanceManager();
+        try {
+            normalFinanceManager.addEntry(expense);
+        } catch (MintException e) {
+            e.printStackTrace();
+        }
+        int index = normalFinanceManager.entryList.indexOf(expense);
+        assertEquals(expense, normalFinanceManager.entryList.get(index));
     }
 }
