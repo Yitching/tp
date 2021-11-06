@@ -50,10 +50,10 @@ public class Filter {
     }
 
 
-    public static ArrayList<Entry> filterEntryByCategory(Enum category, ArrayList<Entry> listToFilter) {
+    public static ArrayList<Entry> filterEntryByCategory(int category, ArrayList<Entry> listToFilter) {
         ArrayList<Entry> filteredArrayList = listToFilter
                 .stream()
-                .filter(e -> e.getCategory().equals(category))
+                .filter(e -> e.getCategory().ordinal() == category)
                 .collect(Collectors.toCollection(ArrayList::new));
         return filteredArrayList;
     }

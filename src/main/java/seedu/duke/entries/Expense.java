@@ -28,9 +28,8 @@ public class Expense extends Entry {
     }
 
     public String toString() {
-        return getType() + " | " + getCategoryIndented() + " | " + getDate() + " | "
-                + getNameIndented() + " |-$" + String.format("%,.2f", getAmount());
-
+        return getType() + "  | " + getCategory().toString() + " | " + getDate() + " | "
+                + getName() + " | $" + String.format("%,.2f", getAmount());
     }
 
     //@@author nipafx-reusedS

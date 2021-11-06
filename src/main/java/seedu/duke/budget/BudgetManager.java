@@ -1,10 +1,17 @@
 package seedu.duke.budget;
 
+import seedu.duke.entries.Entry;
+import seedu.duke.entries.Expense;
 import seedu.duke.entries.ExpenseCategory;
-import seedu.duke.storage.BudgetDataManager;
+import seedu.duke.entries.RecurringEntry;
+import seedu.duke.entries.RecurringExpense;
+import seedu.duke.entries.Type;
+import seedu.duke.finances.NormalFinanceManager;
+import seedu.duke.finances.RecurringFinanceManager;
+import seedu.duke.utility.Ui;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 
 public class BudgetManager {
@@ -34,7 +41,7 @@ public class BudgetManager {
     }
 
     public void setBudget(ExpenseCategory category, double amount) {
-        Budget budget = getBudgetFromCategory(category);
+        Budget budget = getMonthlyBudgetFromCategory(category);
         budget.setLimit(amount);
     }
 
@@ -42,7 +49,7 @@ public class BudgetManager {
         return budgetList;
     }
 
-    private Budget getBudgetFromCategory(ExpenseCategory category) {
+    public Budget getMonthlyBudgetFromCategory(ExpenseCategory category) {
         switch (category) {
         case FOOD:
             return foodBudget;
@@ -60,6 +67,20 @@ public class BudgetManager {
             return giftBudget;
         default:
             return othersBudget;
+        }
+    }
+
+    public void checkExceedBudget(Entry entry, NormalFinanceManager normalFinanceManager,
+            RecurringFinanceManager recurringFinanceManager, BudgetManager budgetManager, Ui ui) {
+        if (entry.getType() == Type.Expense) {
+            ArrayList<Entry> entries = normalFinanceManager.getEntryList();
+            ArrayList<Entry> recurringEntries = recurringFinanceManager.getCopyOfRecurringEntryList();
+            Expense expense = (Expense) entry;
+            ExpenseCategory categoryOfCurrentEntry = expense.getCategory();
+            Budget budget = budgetManager.getMonthlyBudgetFromCategory(categoryOfCurrentEntry);
+            double amountSpent = budget.getMonthlySpending(entries, recurringEntries);
+            double spendingLimit = budget.getLimit();
+            ui.printBudgetWarningMessage(categoryOfCurrentEntry, amountSpent, spendingLimit);
         }
     }
 }

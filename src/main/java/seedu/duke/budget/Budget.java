@@ -1,7 +1,6 @@
 package seedu.duke.budget;
 
 import seedu.duke.entries.Entry;
-import seedu.duke.entries.Expense;
 import seedu.duke.entries.ExpenseCategory;
 import seedu.duke.entries.Type;
 
@@ -30,7 +29,7 @@ public abstract class Budget {
         return this.limit;
     }
 
-    public double getMontlhySpending(ArrayList<Entry> entries) {
+    public double getMonthlySpending(ArrayList<Entry> entries, ArrayList<Entry> recurringEntries) {
         double amount = 0;
         for (Entry entry : entries) {
             if (entry.getType() == Type.Expense
@@ -40,6 +39,25 @@ public abstract class Budget {
                 amount += entry.getAmount();
             }
         }
+        for (Entry entry : recurringEntries) {
+            if (entry.getType() == Type.Expense && (entry.getCategory() == this.category)) {
+                String interval = entry.getInterval().toString();
+                if (interval.equals("MONTH")
+                        && tookPlaceThisMonth(entry)) {
+                    amount += entry.getAmount();
+                }
+                if (interval.equals("YEAR")
+                        && entry.getDate().getMonth() == LocalDate.now().getMonth()
+                        && tookPlaceThisMonth(entry)) {
+                    amount += entry.getAmount();
+                }
+            }
+        }
         return amount;
+    }
+
+    private boolean tookPlaceThisMonth(Entry entry) {
+        return (entry.getDate().isBefore(LocalDate.now().plusMonths(1).withDayOfMonth(1)))
+                && entry.getEndDate().isAfter(LocalDate.now().withDayOfMonth(1));
     }
 }

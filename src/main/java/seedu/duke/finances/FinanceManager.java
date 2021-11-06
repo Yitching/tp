@@ -9,7 +9,8 @@ import java.util.Scanner;
 import java.util.logging.Logger;
 
 public abstract class FinanceManager {
-    public static final String STRING_PROMPT_EDIT = "What would you like to edit?";
+    public static final String STRING_PROMPT_EDIT = "What would you like to edit? "
+            + "Type the tag and what you want to change e.g. a/10";
     public static final String NAME_SEPARATOR = "n/";
     public static final String DATE_SEPARATOR = "d/";
     public static final String AMOUNT_SEPARATOR = "a/";
@@ -24,12 +25,12 @@ public abstract class FinanceManager {
     public static final String BLANK = "";
     private static Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
-    public Entry chooseEntryByKeywords(ArrayList<String> tags, boolean isDelete, Entry query) throws MintException {
-        return null;
-    }
-
     public void deleteEntry(Entry entry) {
 
+    }
+
+    public ArrayList<Entry> filterEntryByKeywords(ArrayList<String> tags, Entry query) throws MintException {
+        return null;
     }
 
     public ArrayList<String> editEntry(Entry query) throws MintException {
@@ -38,30 +39,6 @@ public abstract class FinanceManager {
 
     public void amendEntry(int index, ArrayList<String> choice, Entry entry) throws MintException {
 
-    }
-
-    public Entry deleteEntryByKeywords(ArrayList<String> tags, Entry query) throws MintException {
-        try {
-            Entry entry = chooseEntryByKeywords(tags, true, query);
-            if (entry != null) {
-                deleteEntry(entry);
-            } 
-            return entry;
-        } catch (MintException e) {
-            throw new MintException(e.getMessage());
-        }
-    }
-
-    public ArrayList<String> editEntryByKeywords(ArrayList<String> tags, Entry query) throws MintException {
-        try {
-            Entry entry = chooseEntryByKeywords(tags, false, query);
-            if (entry != null) {
-                return editEntry(entry);
-            }
-        } catch (MintException e) {
-            throw new MintException(e.getMessage());
-        }
-        return null;
     }
 
     public void editSpecifiedEntry(String userInput, int indexToBeChanged, Entry entry) throws MintException {
@@ -114,17 +91,4 @@ public abstract class FinanceManager {
         }
         return description;
     }
-
-    public double calculateTotal(ArrayList<Entry> list) {
-        double total = 0;
-        for (Entry entry: list) {
-            if (entry.getType() == Type.Expense) {
-                total -= entry.getAmount();
-            } else {
-                total += entry.getAmount();
-            }
-        }
-        return total;
-    }
-
 }

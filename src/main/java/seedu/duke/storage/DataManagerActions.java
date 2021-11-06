@@ -1,5 +1,8 @@
 package seedu.duke.storage;
 
+import seedu.duke.exception.MintException;
+import seedu.duke.utility.Ui;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -18,10 +21,20 @@ public class DataManagerActions {
 
     public void createDirectory() {
         Path path = Paths.get("data" + File.separator + "Mint.txt");
+        File myObj = new File(String.valueOf(path.getParent()));
         try {
             Files.createDirectories(path.getParent());
         } catch (IOException e) {
-            e.printStackTrace();
+            if (!myObj.isDirectory()) {
+                Ui.printRetryFileCreationMessage();
+                myObj.delete();
+                createDirectory();
+                try {
+                    throw new MintException("Essential files created!");
+                } catch (MintException mintException) {
+                    System.out.println(mintException.getMessage());
+                }
+            }
         }
     }
 
@@ -32,17 +45,28 @@ public class DataManagerActions {
         } catch (IOException e) {
             System.out.println("An error occurred.");
             e.printStackTrace();
+        } catch (MintException e) {
+            System.out.println(e.getMessage());
         }
     }
 
-    private void createNewFiles(String[] filesToCreate) throws IOException {
+    private void createNewFiles(String[] filesToCreate) throws IOException, MintException {
+        Boolean isPrinted = false;
         for (String file: filesToCreate) {
             assert (file != null);
             File myObj = new File(file);
             if (myObj.createNewFile()) {
-                System.out.println("File created: " + myObj.getName());
+                if (!isPrinted) {
+                    Ui.printFirstTimeUserMessage();
+                    isPrinted = true;
+                }
             } else {
-                System.out.println("File already exists.");
+                if (myObj.isDirectory()) {
+                    Ui.printRetryFileCreationMessage();
+                    myObj.delete();
+                    createNewFiles(filesToCreate);
+                    throw new MintException("Essential files created!");
+                }
             }
         }
     }

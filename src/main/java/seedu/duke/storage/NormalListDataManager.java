@@ -6,6 +6,8 @@ import seedu.duke.entries.IncomeCategory;
 import seedu.duke.entries.Entry;
 import seedu.duke.entries.Expense;
 import seedu.duke.entries.ExpenseCategory;
+import seedu.duke.exception.MintException;
+import seedu.duke.parser.ValidityChecker;
 import seedu.duke.utility.Ui;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -27,7 +29,7 @@ public class NormalListDataManager extends DataManagerActions {
 
     public void appendToEntryListTextFile(Entry entry) {
         // Format of Mint.txt file: 0|2021-12-03|Textbook|15.0
-        FileWriter fileWriter = null;
+        FileWriter fileWriter;
         try {
             fileWriter = new FileWriter(NORMAL_FILE_PATH, true);
             fileWriter.write(entry.getType().toString() + TEXT_DELIMITER + entry.getCategory().ordinal()
@@ -70,6 +72,14 @@ public class NormalListDataManager extends DataManagerActions {
         }
     }
 
+    public void deleteAll() {
+        try {
+            new FileWriter(NORMAL_FILE_PATH, false).close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void lineRemoval(String originalString, ArrayList<String> fileContent) {
         for (int i = 0; i < fileContent.size(); i++) {
             if (fileContent.get(i).equals(originalString)) {
@@ -94,24 +104,43 @@ public class NormalListDataManager extends DataManagerActions {
         }
     }
 
-    public void loadEntryListContents(ArrayList<Entry> entryList) throws FileNotFoundException {
+    public void loadEntryListContents(ArrayList<Entry> entryList) throws FileNotFoundException,
+            ArrayIndexOutOfBoundsException, MintException {
         File mintEntryList = new File(NORMAL_FILE_PATH); // create a File for the given file path
         Scanner scanner = new Scanner(mintEntryList); // create a Scanner using the File as the source
         while (scanner.hasNext()) {
             String fieldsInTextFile = scanner.nextLine();
-            String[] params = fieldsInTextFile.split("\\|");
-            String type = params[0];
-            String catNum = params[1];
-            String date = params[2];
-            String name = params[3];
-            String amount = params[4];
-            loadEntry(type, name, date, amount, catNum, entryList);
+            if (fieldsInTextFile.length() == 0) {
+                continue;
+            }
+            try {
+                String[] params = fieldsInTextFile.split("\\|");
+                String type = params[0];
+                String catNum = params[1];
+                String date = params[2];
+                String name = params[3];
+                String amount = params[4];
+                ValidityChecker.checkValidityOfFieldsInNormalListTxt(type, name, date, amount, catNum);
+                loadEntry(type, name, date, amount, catNum, entryList);
+            } catch (MintException e) {
+                reload(entryList, fieldsInTextFile);
+                throw new MintException(e.getMessage() + " Invalid line deleted. We have reloaded the list!");
+            } catch (ArrayIndexOutOfBoundsException e) {
+                reload(entryList, fieldsInTextFile);
+                throw new ArrayIndexOutOfBoundsException();
+            }
         }
     }
 
+    public void reload(ArrayList<Entry> entryList, String fieldsInTextFile) throws FileNotFoundException,
+            MintException {
+        deleteLineInTextFile(fieldsInTextFile);
+        entryList.clear();
+        loadEntryListContents(entryList);
+    }
 
     public void loadEntry(String type, String name, String dateStr, String amountStr,
-                                 String catNumStr, ArrayList<Entry> entryList) {
+            String catNumStr, ArrayList<Entry> entryList) {
         //should check type before loading
         Entry entry;
         LocalDate date = LocalDate.parse(dateStr);
@@ -134,6 +163,10 @@ public class NormalListDataManager extends DataManagerActions {
             Ui.printMissingFileMessage();
             createDirectory();
             createFiles();
+        } catch (MintException e) {
+            System.out.println(e.getMessage());
+        } catch (ArrayIndexOutOfBoundsException e) {
+            Ui.printFieldsErrorMessage();
         }
     }
 

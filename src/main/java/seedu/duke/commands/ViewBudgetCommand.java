@@ -23,10 +23,11 @@ public class ViewBudgetCommand extends Command {
 
     @Override
     public void execute(NormalFinanceManager normalFinanceManager,
-                        RecurringFinanceManager recurringFinanceManager, BudgetManager budgetManager,
-                        NormalListDataManager normalListDataManager, DataManagerActions dataManagerActions,
-                        RecurringListDataManager recurringListDataManager, BudgetDataManager budgetDataManager, Ui ui) {
-        ui.printBudgetBreakdown(budgetManager.getBudgetList(), normalFinanceManager.getEntryList());
+            RecurringFinanceManager recurringFinanceManager, BudgetManager budgetManager,
+            NormalListDataManager normalListDataManager, DataManagerActions dataManagerActions,
+            RecurringListDataManager recurringListDataManager, BudgetDataManager budgetDataManager, Ui ui) {
+        ui.printBudgetBreakdown(budgetManager.getBudgetList(), normalFinanceManager.getEntryList(),
+                recurringFinanceManager.getCopyOfRecurringEntryList());
     }
 }
 

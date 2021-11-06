@@ -25,33 +25,19 @@ public class RecurringExpense extends RecurringEntry {
         return category;
     }
 
-    public String getCategoryIndented() {
-        double length = getCategory().toString().length();
-        int leftIndent = (int) Math.floor((16 - length) / 2);
-        int rightIndent = (int) Math.ceil((16 - length) / 2);
-        if (leftIndent < 0) {
-            leftIndent = 0;
-        }
-        if (rightIndent < 0) {
-            rightIndent = 0;
-        }
-        return Ui.getIndent(leftIndent, rightIndent, getCategory().toString()).toString();
-    }
-
     public void setCategory(ExpenseCategory category) {
         this.category = category;
     }
 
-
     @Override
     public String toString() {
         if (getEndDate().equals(LocalDate.parse("2200-12-31"))) {
-            return getType() + " | " + getCategoryIndented() + " | " + getDate() + " | "
-                    + getNameIndented() + " |-$" + String.format("%,.2f", getAmount()) + " | " + getInterval().label
+            return getType() + " | " + getCategory().toString() + " | " + getDate() + " | "
+                    + getName() + " |-$" + String.format("%,.2f", getAmount()) + " | " + getInterval().label
                     + " | " + "Forever :D";
         }
-        return getType() + " | " + getCategoryIndented() + " | " + getDate() + " | "
-                + getNameIndented() + " |-$" + String.format("%,.2f", getAmount()) + " | " + getInterval().label
+        return getType() + " | " + getCategory().toString() + " | " + getDate() + " | "
+                + getName() + " |-$" + String.format("%,.2f", getAmount()) + " | " + getInterval().label
                 + " | " + getEndDate();
     }
 

@@ -1,0 +1,31 @@
+@startuml
+skinparam classAttributeIconSize 0
+hide circle
+package "Budget" <<Rectangle>> {
+class BudgetManager {
++ setBudget(category: ExpenseCategory, amount: double): void;
++ getBudgetList(): ArrayList<Budget>;
+                    }
+Class "{abstract}\nBudget" as Budget{
+# category: ExpenseCategory;
+# name: String;
+# limit: double;
++ getCategory(): ExpenseCategory ;
++ getName(): String ;
++ setLimit(amount : double): void ;
++ getLimit(): double ;
+}
+
+class XYZBudget {
+
+}
+}
+
+
+
+
+BudgetManager --> "Budget"
+XYZBudget ..up|> "Budget"
+
+@enduml
+

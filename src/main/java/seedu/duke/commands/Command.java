@@ -11,10 +11,10 @@ import seedu.duke.utility.Ui;
 
 public abstract class Command {
     public abstract void execute(NormalFinanceManager normalFinanceManager,
-                                 RecurringFinanceManager recurringFinanceManager, BudgetManager budgetManager,
-                                 NormalListDataManager normalListDataManager, DataManagerActions dataManagerActions,
-                                 RecurringListDataManager recurringListDataManager, BudgetDataManager budgetDataManager,
-                                 Ui ui);
+            RecurringFinanceManager recurringFinanceManager, BudgetManager budgetManager,
+            NormalListDataManager normalListDataManager, DataManagerActions dataManagerActions,
+            RecurringListDataManager recurringListDataManager, BudgetDataManager budgetDataManager,
+            Ui ui);
 
     public boolean isExit() {
         return false;

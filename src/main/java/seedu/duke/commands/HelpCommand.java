@@ -15,9 +15,9 @@ public class HelpCommand extends Command {
 
     @Override
     public void execute(NormalFinanceManager normalFinanceManager,
-                        RecurringFinanceManager recurringFinanceManager, BudgetManager budgetManager,
-                        NormalListDataManager normalListDataManager, DataManagerActions dataManagerActions,
-                        RecurringListDataManager recurringListDataManager, BudgetDataManager budgetDataManager, Ui ui) {
+            RecurringFinanceManager recurringFinanceManager, BudgetManager budgetManager,
+            NormalListDataManager normalListDataManager, DataManagerActions dataManagerActions,
+            RecurringListDataManager recurringListDataManager, BudgetDataManager budgetDataManager, Ui ui) {
         ui.help();
     }
 }

@@ -1,10 +1,14 @@
 package seedu.duke.utility;
 
 import seedu.duke.budget.Budget;
-import seedu.duke.entries.Entry;
-import seedu.duke.entries.ExpenseCategory;
 import seedu.duke.exception.MintException;
 import seedu.duke.parser.Parser;
+import seedu.duke.entries.Entry;
+import seedu.duke.entries.Type;
+import seedu.duke.entries.RecurringEntry;
+import seedu.duke.entries.Interval;
+import seedu.duke.entries.ExpenseCategory;
+import seedu.duke.parser.ValidityChecker;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -13,6 +17,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Ui {
+    public static final String FIRST_TIME_USER_MESSAGE = "You must be a first time user!\n"
+            + "Welcome! To get you started, type \"help\" to get a list of commands you can use.\n"
+            + "Alternatively, Type \"add n/[description] a/[amount]\" to add your very first item.\n"
+            + "To see what you have added, type \"view\"!";
+    public static final String RETRY_FILE_CREATION_MESSAGE = "Seems like a directory had a text file's extension... "
+            + "Deleting that and trying again... ";
     private Scanner in;
 
     public Ui() {
@@ -30,104 +40,145 @@ public class Ui {
     }
 
     public String readUserInput() {
-        return in.nextLine().trim();
+        if (in.hasNextLine()) {
+            return in.nextLine().trim();
+        }
+        return null;
     }
 
     protected static final String INDENT = "    ";
+    public static final String SOLID_LINE = "_______________________________________________________________________\n";
     public static final String LINE = "    ____________________________________________________________";
     public static final String SUCCESSFUL_EDIT_MESSAGE = "Got it! I will update the fields accordingly!";
-    public static final String UNSUCCESSFUL_EDIT_MESSAGE = "No difference detected!"
-            + "I was unable to perform any edits! "
-            + "Please check that you have made changes or included the tags of the fields you wish to edit! :(";
-
     protected static final String LINE_SEPARATOR = System.lineSeparator();
-    protected static final int INDEX_CANCEL = -1;
-    protected static final String CANCEL_MESSAGE = " To cancel, type \"cancel\"";
+    public static final int MIN_NAME_INDENTATION = 4;
+    public static final int MIN_AMOUNT_INDENTATION = 5;
+    public static final int MIN_SPENDING_INDENTATION = 6;
+    public static final int MIN_LIMIT_INDENTATION = 7;
+    public static final int MIN_CAT_INDENTATION = 8;
+    public static final int INDEX_CANCEL = -1;
+    public static final String CANCEL_MESSAGE = " To cancel, type \"cancel\"";
     public static final String MISSING_FILE_MESSAGE = "Missing data detected! Creating the necessary files...";
+    public static final String MISSING_FIELDS_MESSAGE = "There seems to be some extra/missing fields! "
+            + "Invalid line deleted. We have reloaded the list!";
+    public static final String GREETINGS = "Hello! I'm Mint" + System.lineSeparator() + "What can I do for you?";
+    public static final String SHUTDOWN = "Goodbye! Hope to see you again soon!";
 
     public void printGreetings() {
-        System.out.println("Hello! I'm Mint");
-        System.out.println("What can I do for you?");
+        System.out.println(GREETINGS);
     }
 
-    public static void shutdown() {
-        System.out.println("Goodbye! Hope to see you again soon!");
-    }
-
-    public static void printInvalidTagError() {
-        System.out.println("Sorry, we are only able to process name, date and process for now");
-        System.out.println("The following tags are available: n/ d/ a/");
+    public void shutdown() {
+        System.out.println(SHUTDOWN);
     }
 
     public void help() {
-        System.out.println("Available tags: n/name d/date a/amount c/category_number\n"
+        System.out.println("Available tags: n/name d/date a/AMOUNT c/CATEGORY_NUMBER i/interval e/endDate\n"
                 + "Order of tags does not matter.\n"
-                + "List of commands available.\n"
                 + "Square brackets \"[ ]\" identifies an optional argument.\n"
-                + " - view\n"
+                + "List of commands available.\n"
+                + SOLID_LINE
+                + "KEYING IN ENTRIES. Type \"cat\" to view category number.\n"
+                + "- add n/NAME a/AMOUNT [d/DATE] [c/CATEGORY_NUMBER]\n"
+                + INDENT + "Add expense. Example: add n/chicken rice a/3.50 d/2021-09-30 c/1\n"
+                + "- add income n/NAME a/AMOUNT [d/DATE] [c/CATEGORY_NUMBER]\n"
+                + INDENT + "Add income. Example: add income n/payday a/400 d/2021-10-10 c/1\n"
+                + "- delete [n/{keyword}] [a/AMOUNT] [d/DATE] [c/CATEGORY_NUMBER]\n"
+                + INDENT + "Delete entries using keyword search. Needs at least 1 tag. Example: delete n/chicken\n"
+                + "- edit [n/{keyword}] [a/AMOUNT] [d/DATE] [c/CATEGORY_NUMBER]\n"
+                + INDENT + "Edit entries using keyword search. Needs at least 1 tag. Example: edit n/chicken\n"
+                + SOLID_LINE
+                + "RECURRING EXPENSES AND INCOME. Type \"cat\" to view category number.\n"
+                + "Similar to keying in entries, but includes interval(mandatory for adding), endDate(optional)\n"
+                + "Commands requires a \"R\", \n"
+                + "e.g. addR, addR income, deleteR, editR\n\n"
+                + "- addR n/NAME a/AMOUNT i/INTERVAL [d/START_DATE] [e/END_DATE] [c/CATEGORY_NUMBER] \n"
+                + INDENT + "Add recurring expenses. Example: add n/spotify subscription a/10 i/MONTH d/2021-09-30 c/1\n"
+                + "- addR income n/NAME a/AMOUNT i/INTERVAL [d/START_DATE] [e/END_DATE] [c/CATEGORY_NUMBER]\n"
+                + INDENT + "Add recurring income. Example: add n/payday a/400 i/MONTH d/2021-10-10 c/1\n"
+                + "- deleteR [n/{keyword}] [i/INTERVAL] [d/START_DATE] [e/END_DATE] [c/CATEGORY_NUMBER]\n"
+                + INDENT + "Delete recurring entries using keyword search. Needs at least 1 tag. "
+                + "Example: deleteR n/spotify\n"
+                + "- editR [n/{keyword}] [a/AMOUNT] [d/DATE] [c/category number]\n"
+                + INDENT + "Edit recurring entries using keyword search. Needs at least 1 tag. "
+                + "Example: editR n/spotify\n"
+                + SOLID_LINE
+                + "DELETE ALL ENTRIES\n"
+                + "- deleteAll [normal] [recurring]\n"
+                + INDENT + "Only deletes all entries of the corresponding type.\n"
+                + INDENT + "If no modifiers are specified, it defaults to deleting all entries regardless of type.\n"
+                + SOLID_LINE
+                + "BUDGETING. Type \"cat\" to view category number.\n"
+                + "- set c/category number a/AMOUNT\n"
+                + INDENT + "Set spending limit for individual category. Example: set c/0 100\n"
+                + "- budget\n"
+                + INDENT + "View current month's expenditure and budget\n"
+                + SOLID_LINE
+                + "UTILITIES\n"
+                + "- view\n"
                 + INDENT + "View expenses\n"
                 + "- cat\n"
-                + INDENT + " View categories and category number\n"
-                + "- add n/NAME a/amount [d/YYYY-MM-DD] [c/category_number]\n"
-                + INDENT + "Add expense. Example: add n/chicken rice a/3.50 d/2021-09-30 c/1\n"
-                + "- delete [n/{keyword}] [a/amount] [d/YYYY-MM-DD] [c/category_number]\n"
-                + INDENT + "Delete expense using keyword search. Example: delete n/chicken\n"
-                + "- edit [n/{keyword}] [a/amount] [d/YYYY-MM-DD] [c/category number]\n"
-                + INDENT + "Edit expense using keyword search. Example: edit n/chicken\n"
-                + "- limit c/category number a/amount\n"
-                + INDENT + "Set spending limit for individual category. Example: limit c/0 100\n"
-                + "- breakdown\n"
-                + INDENT + "View breakdown on current month's expenses\n"
+                + INDENT + "View categories and category number\n"
                 + "- exit\n"
+                + INDENT + "Exits the app\n"
+                + SOLID_LINE
         );
     }
 
-    public static void viewGivenList(ArrayList<Entry> list) {
+    public void viewGivenList(ArrayList<Entry> list) {
+        int maxNameLength = MIN_NAME_INDENTATION;
+        int maxAmountLength = MIN_AMOUNT_INDENTATION;
+        int maxCatLength = MIN_CAT_INDENTATION;
         System.out.println("Here is the list of items containing the keyword.");
-        for (int i = 0; i < list.size(); i++) {
-            System.out.println(INDENT + (i + 1) + "  " + list.get(i).toString());
+        for (Entry entry : list) {
+            if (entry.getName().length() > maxNameLength) {
+                maxNameLength = entry.getName().length();
+            }
+            if (String.format("%,.2f", entry.getAmount()).length() > maxAmountLength) {
+                maxAmountLength = String.format("%,.2f", entry.getAmount()).length();
+            }
+            if (entry.getCategory().name().length() > maxCatLength) {
+                maxCatLength = entry.getCategory().name().length();
+            }
+        }
+        System.out.println(" Index |   Type  | " + getMiddleIndented("Category", maxCatLength) + " |    Date    | "
+                + getMiddleIndented("Name", maxNameLength) + " | "
+                + getMiddleIndented("Amount", maxAmountLength + 1) + " | Every |   Until");
+        int indexCount = 1;
+        for (Entry entry : list) {
+            printViewIndividualEntry(entry, maxCatLength, maxNameLength, maxAmountLength, indexCount);
+            indexCount++;
         }
     }
 
-    public static void viewGivenListAndTotal(ArrayList<Entry> list, double totalAmount) {
-        System.out.println("Here is the list of your entries:");
-        for (int i = 0; i < list.size(); i++) {
-            System.out.println(INDENT + (i + 1) + "  " + list.get(i).toString());
-        }
-        System.out.println(LINE);
-        System.out.println(INDENT + "Total: " + totalAmount);
-    }
-
-    public static int chooseItemToDeleteOrEdit(ArrayList<Entry> filteredList, boolean isDelete) throws MintException {
+    public int chooseItemToDeleteOrEdit(ArrayList<Entry> filteredList, boolean isDelete) {
         if (isDelete) {
             System.out.println("Enter the index of the item you want to delete." + CANCEL_MESSAGE);
         } else {
             System.out.println("Enter the index of the item you want to edit." + CANCEL_MESSAGE);
         }
-
-        Scanner in = new Scanner(System.in);
         int index = 0;
         boolean proceedToDelete = false;
-        while (!proceedToDelete) {
-            String userInput = in.nextLine();
-            if (userInput.trim().equals("cancel")) {
+
+        String userInput = readUserInput();
+        while (userInput != null && !proceedToDelete) {
+            if (userInput.equals("cancel")) {
                 return INDEX_CANCEL;
             }
             try {
-                index = Integer.parseInt(userInput);
-                if (index < 1 || index > filteredList.size()) {
-                    System.out.println(MintException.ERROR_INDEX_OUT_OF_BOUND + CANCEL_MESSAGE);
-                } else {
-                    proceedToDelete = true;
-                }
-            } catch (NumberFormatException e) {
-                System.out.println(MintException.ERROR_INDEX_INVALID_NUMBER + CANCEL_MESSAGE);
+                index = ValidityChecker.checkInvalidIndex(userInput, filteredList.size());
+                proceedToDelete = true;
+            } catch (MintException e) {
+                System.out.println(e.getMessage() + CANCEL_MESSAGE);
+            }
+            if (!proceedToDelete) {
+                userInput = readUserInput();
             }
         }
         return index - 1;
     }
 
-    public static boolean isConfirmedToDeleteOrEdit(Entry entry, boolean isDelete) {
+    public boolean isConfirmedToDeleteOrEdit(Entry entry, boolean isDelete) {
         if (isDelete) {
             System.out.println("Is this what you want to delete?");
         } else {
@@ -135,47 +186,79 @@ public class Ui {
         }
         System.out.println(INDENT + entry);
         System.out.println("Type \"y\" if yes. Type \"n\" if not.");
-        Scanner in = new Scanner(System.in);
-        while (true) {
-            String userInput = in.nextLine();
+        return isConfirmed();
+    }
+
+    public boolean isConfirmDeleteAll() {
+        System.out.println("Are you sure you want to delete all entries?");
+        System.out.println("Type \"y\" if yes. Type \"n\" if not.");
+        return isConfirmed();
+    }
+
+    public boolean isConfirmed() {
+        String userInput = readUserInput();
+        while (userInput != null) {
             switch (userInput.trim()) {
             case "y":
                 return true;
             case "n":
                 return false;
             default:
-                System.out.println("Sorry I don't understand what that means. +"
+                System.out.println("Sorry I don't understand what that means. "
                         + "Type \"y\" if yes. Type \"n\" if not.");
-                break;
             }
+            userInput = readUserInput();
         }
+        return false;
     }
 
-    public static void printOutcomeOfEditAttempt(Boolean printEditSuccess, Boolean exceptionThrown) {
-        if (!exceptionThrown) {
-            if (printEditSuccess) {
-                System.out.println(SUCCESSFUL_EDIT_MESSAGE);
-            } else {
-                System.out.println(UNSUCCESSFUL_EDIT_MESSAGE);
-            }
-        }
+    public void deleteAllConfirmation() {
+        System.out.println("All entries successfully deleted.");
+    }
+
+    public void deleteAborted() {
+        System.out.println("Delete aborted.");
+    }
+
+    public void printNoMatchingEntryMessage() {
+        System.out.println(MintException.ERROR_EXPENSE_NOT_IN_LIST);
+    }
+
+    public void printCancelMessage() {
+        System.out.println("Ok. I have cancelled the process.");
+    }
+
+    public static void printOutcomeOfEditAttempt() {
+        System.out.println(SUCCESSFUL_EDIT_MESSAGE);
     }
 
     public void printCategoryList() {
         System.out.println("Here are the categories and its tag number\n"
-                        + "Expenses           | Income\n"
-                        + "c/0 FOOD           | c/0 ALLOWANCE\n"
-                        + "c/1 ENTERTAINMENT  | c/1 WAGES\n"
-                        + "c/2 TRANSPORTATION | c/2 SALARY\n"
-                        + "c/3 HOUSEHOLD      | c/3 INTERESTED\n"
-                        + "c/4 APPAREL        | c/4 INVESTMENT\n"
-                        + "c/5 BEAUTY         | c/5 COMMISSION\n"
-                        + "c/6 GIFT           | c/6 GIFT\n"
-                        + "c/7 OTHERS         | c/7 OTHERS\n");
+                + "Expenses           | Income\n"
+                + "c/0 FOOD           | c/0 ALLOWANCE\n"
+                + "c/1 ENTERTAINMENT  | c/1 WAGES\n"
+                + "c/2 TRANSPORTATION | c/2 SALARY\n"
+                + "c/3 HOUSEHOLD      | c/3 INTERESTED\n"
+                + "c/4 APPAREL        | c/4 INVESTMENT\n"
+                + "c/5 BEAUTY         | c/5 COMMISSION\n"
+                + "c/6 GIFT           | c/6 GIFT\n"
+                + "c/7 OTHERS         | c/7 OTHERS\n");
     }
 
     public static void printMissingFileMessage() {
         System.out.println(MISSING_FILE_MESSAGE);
+    }
+
+    public static void printFirstTimeUserMessage() {
+        System.out.println(FIRST_TIME_USER_MESSAGE);
+    }
+
+    public static void printRetryFileCreationMessage() {
+        System.out.println(RETRY_FILE_CREATION_MESSAGE);
+    }
+
+    public static void printFieldsErrorMessage() {
+        System.out.println(MISSING_FIELDS_MESSAGE);
     }
 
     //    public static void setLimitMessage(String catNumString, String amount) {
@@ -188,7 +271,7 @@ public class Ui {
         StringBuilder missingFieldsErrorMessage = new StringBuilder();
         missingFieldsErrorMessage.append(Parser.STRING_INCLUDE);
         for (String delimiter : missingDelimiters) {
-            switch (delimiter) {
+            switch (delimiter.trim()) {
             case "n/":
                 missingFieldsErrorMessage.append(index).append(Parser.SEPARATOR).append(Parser.STRING_DESCRIPTION);
                 index++;
@@ -220,16 +303,33 @@ public class Ui {
         return missingFieldsErrorMessage;
     }
 
-    public static void printView(ArrayList<Entry> outputArray, LocalDate fromDate, LocalDate endDate, double total) {
+    public int[] printView(ArrayList<Entry> outputArray, LocalDate fromDate, LocalDate endDate, double total) {
+        int maxNameLength = MIN_NAME_INDENTATION;
+        int maxAmountLength = MIN_AMOUNT_INDENTATION;
+        int maxCatLength = MIN_CAT_INDENTATION;
         System.out.println("Here is the list of your entries:");
         if (fromDate != null) {
             System.out.println("Since " + fromDate + " to " + endDate + ":");
         }
-        System.out.println("  Type  |     Category     |    Date    |       Name       | Amount | Every | Until");
         for (Entry entry : outputArray) {
-            System.out.println(entry);
+            if (entry.getName().length() > maxNameLength) {
+                maxNameLength = entry.getName().length();
+            }
+            if (String.format("%,.2f", entry.getAmount()).length() > maxAmountLength) {
+                maxAmountLength = String.format("%,.2f", entry.getAmount()).length();
+            }
+            if (entry.getCategory().name().length() > maxCatLength) {
+                maxCatLength = entry.getCategory().name().length();
+            }
         }
-        System.out.print("                                                Net Total: |");
+        System.out.println("  Type  | " + getMiddleIndented("Category", maxCatLength) + " |    Date    | "
+                + getMiddleIndented("Name", maxNameLength) + " | "
+                + getMiddleIndented("Amount", maxAmountLength + 1) + " | Every |   Until");
+        for (Entry entry : outputArray) {
+            printViewIndividualEntry(entry, maxCatLength, maxNameLength, maxAmountLength, 0);
+        }
+        System.out.print(getIndent(maxNameLength + maxCatLength, 0, "")
+                + "                Net Total: |");
         if (total < 0) {
             total = Math.abs(total);
             System.out.print("-$" + String.format("%,.2f", total));
@@ -237,12 +337,40 @@ public class Ui {
             System.out.print(" $" + String.format("%,.2f", total));
         }
         System.out.println();
+        return new int[]{maxCatLength, maxNameLength, maxAmountLength};
     }
 
-    public static void printViewRecurring(ArrayList<Entry> entryList) {
-        System.out.println("Here is the information about your recurring entries:");
+    private static void printViewIndividualEntry(Entry entry, int maxCatLength, int maxNameLength,
+            int maxAmountLength, int indexInt) {
+        String index = indexInt == 0 ? "" : "   " + indexInt + "   | ";
+        String type = entry.getType() == Type.Expense ? entry.getType().toString() : entry.getType() + " ";
+        String category = getMiddleIndented(entry.getCategory().name(), maxCatLength);
+        String date = entry.getDate().toString();
+        String name = getMiddleIndented(entry.getName(), maxNameLength);
+        String amount = getRightIndented(String.format("%,.2f", entry.getAmount()), maxAmountLength);
+        String negativeSign = entry.getType() == Type.Expense ? "-$" : " $";
+        if (entry instanceof RecurringEntry) {
+            String interval = entry.getInterval() == Interval.MONTH ? entry.getInterval().toString()
+                    : entry.getInterval() + " ";
+            String until = entry.getEndDate().toString();
+            until = until.equals("2200-12-31") ? "Forever :D" : until;
+            System.out.println(index + type + " | " + category + " | " + date + " | " + name + " |" + negativeSign
+                    + amount + " | " + interval + " | " + until);
+        } else {
+            System.out.println(index + type + " | " + category + " | " + date + " | " + name + " |" + negativeSign
+                    + amount + " |       |");
+        }
+    }
+
+    public void printViewRecurring(ArrayList<Entry> entryList, int maxCatIndent, int maxNameIndent,
+            int maxAmountIndent, boolean isViewAll) {
+        if (isViewAll) {
+            System.out.println("Here is the list of all recurring entries, where some were added to the above list:");
+        } else {
+            System.out.println("Here is the list of recurring entries added to the above list:");
+        }
         for (Entry entry : entryList) {
-            System.out.println(entry);
+            printViewIndividualEntry(entry, maxCatIndent, maxNameIndent, maxAmountIndent, 0);
         }
     }
 
@@ -262,8 +390,39 @@ public class Ui {
         return itemWithIndent;
     }
 
+    public static String getRightIndented(String amount, int indent) {
+        double length = amount.length();
+        int rightIndent = (int) (indent - length);
+        if (rightIndent < 0) {
+            rightIndent = 0;
+        }
+        return getIndent(0, rightIndent, amount).toString();
+    }
+
+    public static String getMiddleIndented(String name, int indent) {
+        double length = name.length();
+        int leftIndent = (int) Math.floor((indent - length) / 2);
+        int rightIndent = (int) Math.ceil((indent - length) / 2);
+        if (leftIndent < 0) {
+            leftIndent = 0;
+        }
+        if (rightIndent < 0) {
+            rightIndent = 0;
+        }
+        return Ui.getIndent(leftIndent, rightIndent, name).toString();
+    }
+
+    public static String getLeftIndented(String amount, int indent) {
+        double length = amount.length();
+        int leftIndent = (int) (indent - length);
+        if (leftIndent < 0) {
+            leftIndent = 0;
+        }
+        return getIndent(leftIndent, 0, amount).toString();
+    }
+
     public void printEntryAdded(Entry entry) {
-        System.out.println("I've added :" + entry);
+        System.out.println("I've added: " + entry);
     }
 
     public void printInvalidCommand(String message) {
@@ -278,33 +437,62 @@ public class Ui {
         System.out.printf("Budget for %s set to $%.2f\n", category, amount);
     }
 
-    public void printBudgetBreakdown(ArrayList<Budget> budgetList, ArrayList<Entry> entryList) {
-        System.out.println("Here is the budget for the month.");
+    public void printBudgetBreakdown(ArrayList<Budget> budgetList, ArrayList<Entry> entries,
+            ArrayList<Entry> recurringEntries) {
+        int maxSpendingLength = MIN_SPENDING_INDENTATION;
+        int maxLimitLength = MIN_LIMIT_INDENTATION;
+        int maxCatLength = MIN_CAT_INDENTATION;
         for (Budget budget : budgetList) {
-            String categoryIndented = getCategoryIndented(budget.getCategory()).toString();
-            String limit = budget.getLimit() == 0 ? "Not set" : "$" + budget.getLimit();
-            System.out.printf("%s | $%.2f / %s\n",
-                    categoryIndented,
-                    budget.getMontlhySpending(entryList),
-                    limit);
+            if (String.format("$%,.2f",
+                    budget.getMonthlySpending(entries, recurringEntries)).length() > maxSpendingLength) {
+                maxSpendingLength = String.format("$%,.2f",
+                        budget.getMonthlySpending(entries, recurringEntries)).length();
+            }
+            if (String.format("$%,.2f", budget.getLimit()).length() > maxLimitLength) {
+                maxLimitLength = String.format("$%,.2f", budget.getLimit()).length();
+            }
+            if (budget.getCategory().name().length() > maxCatLength) {
+                maxCatLength = budget.getCategory().name().length();
+            }
         }
+        System.out.println("Here is the budget for " + LocalDate.now().getMonth() + " " + LocalDate.now().getYear());
+        System.out.println(getMiddleIndented("Category", maxCatLength) + " | "
+                + getLeftIndented("Amount", maxSpendingLength) + " | "
+                + getRightIndented("Budget", maxLimitLength) + " | Percentage");
+        for (Budget budget : budgetList) {
+            printBudgetIndividualEntry(budget, entries, recurringEntries, maxCatLength, maxSpendingLength,
+                    maxLimitLength);
+        }
+
     }
 
-    public StringBuilder getCategoryIndented(ExpenseCategory category) {
-        double length = category.name().length();
-        int leftIndent = (int) Math.floor((16 - length) / 2);
-        int rightIndent = (int) Math.ceil((16 - length) / 2);
-        if (leftIndent < 0) {
-            leftIndent = 0;
+    public void printBudgetIndividualEntry(Budget budget, ArrayList<Entry> entries,
+            ArrayList<Entry> recurringEntries, int maxCatLength, int maxSpendingLength,
+            int maxLimitLength) {
+        String category = getMiddleIndented(budget.getCategory().name(), maxCatLength);
+        String spending = getLeftIndented(String.format("$%,.2f",
+                budget.getMonthlySpending(entries, recurringEntries)),
+                maxSpendingLength);
+        String limit = budget.getLimit() == 0 ? getRightIndented("Not set", maxLimitLength) :
+                getRightIndented(String.format("$%,.2f", budget.getLimit()), maxLimitLength);
+        String percentage = "";
+        if (budget.getLimit() != 0 && budget.getMonthlySpending(entries, recurringEntries) != 0) {
+            percentage = String.format("%,.2f",
+                    budget.getMonthlySpending(entries, recurringEntries) / budget.getLimit() * 100) + "%";
         }
-        if (rightIndent < 0) {
-            rightIndent = 0;
+        System.out.println(category + " | " + spending + " / " + limit + " | " + percentage);
+    }
+
+    public void printBudgetWarningMessage(ExpenseCategory category, double spending, double limit) {
+        if (spending > 0.8 * limit && limit != 0) {
+            System.out.printf("Slow down, you've set aside $%.2f for %s, "
+                    + "but you already spent $%.2f.\n", limit, category, spending);
         }
-        return getIndent(leftIndent, rightIndent, category.name());
     }
 
     public void printUnsafeCharacters() {
-        System.out.println("Please do not use special characters. Only '.', '/', '-' are allowed ");
+        System.out.println("Please do not use special characters. "
+                + "Only '.', '/', '-' are allowed. '/' is strictly use for tags. ");
     }
 }
 

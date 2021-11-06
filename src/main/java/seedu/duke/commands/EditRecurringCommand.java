@@ -26,14 +26,18 @@ public class EditRecurringCommand extends Command {
 
     @Override
     public void execute(NormalFinanceManager normalFinanceManager,
-                        RecurringFinanceManager recurringFinanceManager, BudgetManager budgetManager,
-                        NormalListDataManager normalListDataManager, DataManagerActions dataManagerActions,
-                        RecurringListDataManager recurringListDataManager, BudgetDataManager budgetDataManager, Ui ui) {
+            RecurringFinanceManager recurringFinanceManager, BudgetManager budgetManager,
+            NormalListDataManager normalListDataManager, DataManagerActions dataManagerActions,
+            RecurringListDataManager recurringListDataManager, BudgetDataManager budgetDataManager, Ui ui) {
         try {
-            ArrayList<String> list = recurringFinanceManager.editEntryByKeywords(tags, query);
-            String stringToOverwrite = list.get(0);
-            String stringToUpdate = list.get(1);
-            recurringListDataManager.editEntryListTextFile(stringToOverwrite, stringToUpdate);
+            EditCommand dummyEditCommand = new EditCommand(tags, query);
+            Entry entryToEdit = dummyEditCommand.determineEntryToEdit(recurringFinanceManager, ui);
+            if (entryToEdit != null) {
+                ArrayList<String> list = recurringFinanceManager.editEntry(entryToEdit);
+                String stringToOverwrite = list.get(0);
+                String stringToUpdate = list.get(1);
+                recurringListDataManager.editEntryListTextFile(stringToOverwrite, stringToUpdate);
+            }
         } catch (MintException e) {
             ui.printError(e);
         }

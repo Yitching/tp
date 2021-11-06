@@ -1,0 +1,78 @@
+@startuml
+box Main
+Participant ":Duke" as Duke
+end box
+box Ui
+Participant ":Ui" as Ui
+end box
+box Logic
+Participant ":Parser" as Parser
+Participant ":ValidityChecker" as Valid
+Participant ":DeleteCommand" as DeleteCommand
+end box
+
+
+
+box Model
+Participant ":NormalFinanceManager" as NormalFinanceManager
+Participant "query:Entry" as Entry
+end box
+
+box Storage
+Participant ":NormalListDataManager" as NormalListDataManager
+end box
+
+activate Duke
+Duke -> Parser : parseCommand(userInput)
+activate Parser
+
+Parser -> Parser : parseInputByTags(userInput)
+activate Parser
+Parser -> Valid : checkExistenceAndValidityOfTags(parser, userInput)
+activate Valid
+Valid --> Parser : validTags
+deactivate Valid
+
+
+Parser --> Parser : validTags
+deactivate Parser
+Parser -> Parser : createIncomeObject()
+
+activate Parser
+create Entry
+
+Parser -> Entry : create
+activate Entry
+Entry --> Parser : query
+deactivate Entry
+Parser --> Parser : query
+deactivate Parser
+
+create DeleteCommand
+Parser -> DeleteCommand : DeleteCommand(validTags, query)
+activate DeleteCommand
+DeleteCommand --> Parser
+deactivate DeleteCommand
+Parser --> Duke
+deactivate Parser
+
+Duke -> DeleteCommand : execute(...)
+activate DeleteCommand
+DeleteCommand -> NormalFinanceManager : deleteByKeyword(validTags, query)
+activate NormalFinanceManager
+NormalFinanceManager --> DeleteCommand : deletedEntry
+DeleteCommand -> NormalListDataManager : deleteLineInTextFile(stringToDelete)
+activate NormalListDataManager
+NormalListDataManager --> DeleteCommand
+deactivate NormalListDataManager
+
+deactivate NormalFinanceManager
+
+DeleteCommand -> Ui : printEntryDeleted(deletedEntry)
+activate Ui
+Ui --> DeleteCommand
+deactivate Ui
+DeleteCommand --> Duke
+deactivate DeleteCommand
+destroy DeleteCommand
+@enduml

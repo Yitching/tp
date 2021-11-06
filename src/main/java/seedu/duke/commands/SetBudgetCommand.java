@@ -25,9 +25,10 @@ public class SetBudgetCommand extends Command {
 
     @Override
     public void execute(NormalFinanceManager normalFinanceManager,
-                        RecurringFinanceManager recurringFinanceManager, BudgetManager budgetManager,
-                        NormalListDataManager normalListDataManager, DataManagerActions dataManagerActions,
-                        RecurringListDataManager recurringListDataManager, BudgetDataManager budgetDataManager, Ui ui) {
+            RecurringFinanceManager recurringFinanceManager, BudgetManager budgetManager,
+            NormalListDataManager normalListDataManager, DataManagerActions dataManagerActions,
+            RecurringListDataManager recurringListDataManager, BudgetDataManager budgetDataManager, Ui ui) {
+        assert (amount < 1000000 && amount >= 0);
         budgetManager.setBudget(category, amount);
         budgetDataManager.writeToBudgetTextFile(budgetManager.getBudgetList());
         ui.printSetBudget(category, amount);

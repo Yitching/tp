@@ -1,0 +1,40 @@
+@startuml
+package "Ui" <<Rectangle>> {
+
+}
+package "Model" <<Rectangle>> {
+
+}
+package "Storage" <<Rectangle>> {
+
+}
+package "Main" <<Rectangle>> {
+}
+package "Logic" <<Rectangle>> {
+
+
+package "parser" <<Rectangle>> {
+class ValidityChecker
+class           Parser
+}
+
+package "commands" <<Rectangle>> {
+abstract class  "Command"
+class XYZCommand
+}
+
+
+
+Main --> "1" Parser
+Command <|-- XYZCommand
+Parser ..> ValidityChecker
+Parser ..> XYZCommand : returns >
+Main ..> Command : executes >
+
+Command ..> Ui
+Parser ..> Model
+Command ..> Model
+Command ..> Storage
+}
+hide members
+@enduml

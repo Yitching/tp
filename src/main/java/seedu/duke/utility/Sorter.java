@@ -10,18 +10,18 @@ import java.util.Comparator;
 
 public class Sorter  {
 
-    public static Comparator<Entry> compareByName = Comparator.comparing(i -> i.getName());
+    public static Comparator<Entry> compareByName = Comparator.comparing(Entry::getName);
 
     public static Comparator<Entry> compareByAmount = (i, j) -> (int)(j.getAmount() - i.getAmount());
 
     public static Comparator<Entry> compareByDate = (i, j) -> j.getDate().compareTo(i.getDate());
 
-    public static Comparator<Entry> compareByCategory = (i, j) -> j.getCategory().compareTo(i.getCategory());
+    public static Comparator<Entry> compareByCategory = Comparator.comparingInt(i -> i.getCategory().ordinal());
 
 
 
-    public static void trimByYear(ArrayList<Entry> outputArray, String year) {
-        outputArray.removeIf(entry -> entry.getDate().getYear() != Integer.parseInt(year));
+    public static void trimByYear(ArrayList<Entry> outputArray, int year) {
+        outputArray.removeIf(entry -> entry.getDate().getYear() != year);
     }
 
     public static void trimByMonth(ArrayList<Entry> outputArray, Month month) {
