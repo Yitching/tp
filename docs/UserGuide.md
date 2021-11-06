@@ -14,7 +14,7 @@ step-by-step-instructions.
 
 ## Table of Contents
 
-- [Quick start](#quickStart)
+- [Quick Start](#quickStart)
     - [Setting Up](#settingUp)
     - [Running the Programme](#runningTheProgramme)
     - [[For users new to CLI] Changing the Directory](#changingTheDirectory)
@@ -25,6 +25,7 @@ step-by-step-instructions.
     - [Viewing entries](#view)
     - [Deleting entries](#delete)
     - [Deleting recurring entries](#deleteR)
+    - [Deleting all entries](#deleteAll)
     - [Editing entries](#edit)
     - [Editing recurring entries](#editR)
     - [Viewing categories](#cat)
@@ -213,7 +214,7 @@ Format: `view [income] [expense] [by SORTTYPE] [month MONTH] [year YEAR] [from S
 - `SORTTYPE` can be any of the following types: `name`, `date`, `amount`, `category`
 - `MONTH(optional)` can be any number from 1 to 12.
 - If `MONTH` is not specified, the default will be the current month.
-- `YEAR(optional)` can be any 4-digit number.
+- `YEAR(optional)` can be any 4-digit number from 1000 to 9999.
 - If `YEAR` is not specified, the default will be the current year.
 - `STARTDATE(optional)` and `ENDDATE(optional)` can be any of the [acceptable date formats](#dateFormat).
 - If `STARTDATE` is specified but `ENDDATE` is not specified, the default `ENDDATE` set would be the current date.
@@ -232,19 +233,25 @@ Examples and expected Output:
 ```
 view
 Here is the list of your entries:
-  Type  |     Category     |    Date    |       Name       | Amount
-Expense |      OTHERS      | 2021-10-25 |     Textbook     |-$15.00
-Expense |       FOOD       | 2021-04-20 |  Cheese Burger   |-$4.20
-Income  |  ENTERTAINMENT   | 2021-02-19 |      Sales       | $34.00
-                                                Net Total: | $14.80
+  Type  | Category |    Date    |     Name      | Amount | Every |   Until
+Income  |  WAGES   | 2021-11-03 |     Sales     | $34.00 |       |
+Expense |  OTHERS  | 2021-10-28 |    Netflix    |-$40.00 | MONTH | Forever :D
+Expense |  OTHERS  | 2021-10-28 |      Viu      |-$30.00 | MONTH | Forever :D
+Expense |  OTHERS  | 2021-10-25 |   Textbook    |-$15.00 |       |
+Expense |   FOOD   | 2021-04-20 | Cheese Burger |-$4.20  |       |
+                                     Net Total: |-$55.20
+Here is the list of recurring entries added to the above list:
+Expense |  OTHERS  | 2021-10-28 |    Netflix    |-$40.00 | MONTH | Forever :D
+Expense |  OTHERS  | 2021-10-28 |      Viu      |-$30.00 | MONTH | Forever :D
 ```
 
 ```
 view income
 Here is the list of your entries:
-  Type  |     Category     |    Date    |       Name       | Amount
-Income  |  ENTERTAINMENT   | 2021-02-19 |      Sales       | $34.00
-                                                Net Total: | $34.00
+  Type  | Category |    Date    | Name  | Amount | Every |   Until
+Income  |  WAGES   | 2021-11-03 | Sales | $34.00 |       |
+                             Net Total: | $34.00
+Here is the list of recurring entries added to the above list:
 ```
 
 ```
@@ -252,19 +259,22 @@ view month 4 year 2021
 For the year 2021:
 For the month of APRIL:
 Here is the list of your entries:
-  Type  |     Category     |    Date    |       Name       | Amount
-Expense |       FOOD       | 2021-04-20 |  Cheese Burger   |-$4.20
-                                                Net Total: |-$4.20
+  Type  | Category |    Date    |     Name      | Amount | Every |   Until
+Expense |   FOOD   | 2021-04-20 | Cheese Burger |-$4.20  |       |
+                                     Net Total: |-$4.20
+Here is the list of recurring entries added to the above list:
 ```
 
 ```
 view from 2021-03-25 2022-01-02 by amount ascending
 Here is the list of your entries:
 Since 2021-03-25 to 2022-01-02:
-  Type  |     Category     |    Date    |       Name       | Amount
-Expense |       FOOD       | 2021-04-20 |  Cheese Burger   |-$4.20
-Expense |      OTHERS      | 2021-10-25 |     Textbook     |-$15.00
-                                                Net Total: |-$19.20
+  Type  | Category |    Date    |     Name      | Amount | Every |   Until
+Expense |   FOOD   | 2021-04-20 | Cheese Burger |-$4.20  |       |
+Expense |  OTHERS  | 2021-10-25 |   Textbook    |-$15.00 |       |
+Income  |  WAGES   | 2021-11-03 |     Sales     | $34.00 |       |
+                                     Net Total: | $14.80
+Here is the list of recurring entries added to the above list:
 ```
 
 ## <a name="delete"></a>Deleting an entry: `delete`
@@ -308,8 +318,9 @@ I have deleted: Expense  | OTHERS | 2012-09-21 | Textbook | $40.00
 ```
 delete n/Cheese Burger d/2020-04-20 a/4.2
 Here is the list of items containing the keyword.
-    1  Income  | OTHERS | 2020-04-20 | Cheese Burger | $4.20
-    2  Expense  | OTHERS | 2020-04-20 | Cheese Burger | $4.20
+ Index |   Type  | Category |    Date    |     Name      | Amount | Every |   Until
+   1   | Income  |  OTHERS  | 2020-04-20 | Cheese Burger |-$4.20  
+   2   | Expense |  OTHERS  | 2020-04-20 | Cheese Burger |-$4.20  
 Enter the index of the item you want to delete. To cancel, type "cancel"
 1
 I have deleted: Income  | OTHERS | 2020-04-20 | Cheese Burger | $4.20
@@ -358,11 +369,47 @@ I have deleted: Expense | OTHERS | 2021-10-28 | Netflix |-$90.00 | YEAR | Foreve
 ```
 deleteR i/mOnTh
 Here is the list of items containing the keyword.
-    1  Expense | OTHERS | 2021-10-28 | Netflix |-$40.00 | MONTH | Forever :D
-    2  Expense | OTHERS | 2021-10-28 | Viu |-$30.00 | MONTH | Forever :D
+ Index |   Type  | Category |    Date    |  Name   | Amount | Every |   Until
+   1   | Expense |  OTHERS  | 2021-10-28 | Netflix |-$40.00 | MONTH | Forever :D
+   2   | Expense |  OTHERS  | 2021-10-28 |   Viu   |-$30.00 | MONTH | Forever :D
 Enter the index of the item you want to delete. To cancel, type "cancel"
 1
 I have deleted: Expense | OTHERS | 2021-10-28 | Netflix |-$40.00 | MONTH | Forever :D
+```
+
+## <a name="delete"></a>Deleting all entries: `deleteAll`
+
+Deletes all existing entries.
+
+Format: `deleteAll [normal] [recurring]`
+
+- Deletes all normal and recurring entries in the list.
+- `[normal](optional)` and `[recurring](optional)` if appended, only deletes all entries of the corresponding type.
+- If no modifiers are specified, it defaults to deleting all entries regardless of type.
+- `normal` and `recurring` can be substituted for `n` and `r` respectively as a shortcut.
+- `deleteall` also accepted as a command.
+
+Examples:
+
+- `deleteAll`
+- `deleteall normal`
+
+Examples and expected output:
+
+```
+deleteAll
+Are you sure you want to delete all entries?
+Type "y" if yes. Type "n" if not.
+y
+All entries successfully deleted.
+```
+
+```
+deleteall normal
+Are you sure you want to delete all entries?
+Type "y" if yes. Type "n" if not.
+y
+All entries successfully deleted.
 ```
 
 ## <a name="edit"></a>Editing an entry: `edit`
@@ -408,14 +455,14 @@ Got it! I will update the fields accordingly!
 ```
 edit n/Cheese Burger d/2020-04-20 a/4.2
 Here is the list of items containing the keyword.
-    1  Expense  | OTHERS | 2020-04-20 | Cheese Burger | $4.20
-    2  Expense  | OTHERS | 2020-04-20 | Cheese Burger | $4.20
+ Index |   Type  | Category |    Date    |     Name      | Amount | Every |   Until
+   1   | Expense |  OTHERS  | 2020-04-20 | Cheese Burger |-$4.20  
+   2   | Expense |  OTHERS  | 2020-04-20 | Cheese Burger |-$4.20  
 Enter the index of the item you want to edit. To cancel, type "cancel"
 1
 What would you like to edit?
 c/7
 Got it! I will update the fields accordingly!
-
 ```
 
 ## <a name="editR"></a>Editing a recurring entry: `editR`
@@ -463,8 +510,9 @@ Got it! I will update the fields accordingly!
 ```
 editR n/Textbook d/2012-09-21 a/15
 Here is the list of items containing the keyword.
-    1  Expense | OTHERS | 2012-09-21 | Textbook |-$15.00 | MONTH | Forever :D
-    2  Expense | OTHERS | 2012-09-21 | Textbook |-$15.00 | MONTH | Forever :D
+ Index |   Type  | Category |    Date    |   Name   | Amount | Every |   Until
+   1   | Expense |  OTHERS  | 2012-09-21 | Textbook |-$15.00 | MONTH | Forever :D
+   2   | Expense |  OTHERS  | 2012-09-21 | Textbook |-$15.00 | MONTH | Forever :D
 Enter the index of the item you want to edit. To cancel, type "cancel"
 1
 What would you like to edit?
@@ -520,15 +568,16 @@ Format: `budget`
 Expected Output:
 
 ```
-Here is the budget for the month.
-      FOOD       | $5.00 / $100.0
- ENTERTAINMENT   | $0.00 / Not set
- TRANSPORTATION  | $0.00 / Not set
-   HOUSEHOLD     | $0.00 / Not set
-    APPAREL      | $0.00 / Not set
-     BEAUTY      | $0.00 / Not set
-      GIFT       | $0.00 / Not set
-     OTHERS      | $23.50 / Not set
+Here is the budget for NOVEMBER 2021
+   Category    | Amount | Budget  | Percentage
+     FOOD      |  $5.00 / $100.00 | 5.00%
+ENTERTAINMENT  |  $0.00 / Not set | 
+TRANSPORTATION |  $0.00 / Not set | 
+  HOUSEHOLD    |  $0.00 / Not set | 
+   APPAREL     |  $0.00 / Not set | 
+    BEAUTY     |  $0.00 / Not set | 
+     GIFT      |  $0.00 / Not set | 
+    OTHERS     | $23.50 / Not set | 
 ```
 
 ## <a name="exit"></a>Exit the program: `exit`

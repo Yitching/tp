@@ -35,20 +35,13 @@ public class AddCommand extends Command {
             normalFinanceManager.addEntry(entry);
             normalListDataManager.appendToEntryListTextFile(entry);
             ui.printEntryAdded(entry);
-            if (entry.getType() == Type.Expense) {
-                ArrayList<Entry> entries = normalFinanceManager.getEntryList();
-                Expense expense = (Expense) entry;
-                ExpenseCategory categoryOfCurrentEntry = expense.getCategory();
-                double amountSpent = budgetManager.getMonthlySpendingCategory(categoryOfCurrentEntry, entries);
-                Budget budgetOfCurrentEntry = budgetManager.getMonthlyBudgetFromCategory(categoryOfCurrentEntry);
-                double spendingLimit = budgetOfCurrentEntry.getLimit();
-                ui.printBudgetWarningMessage(categoryOfCurrentEntry, amountSpent, spendingLimit);
-
-            }
+            budgetManager.checkExceedBudget(entry, normalFinanceManager, recurringFinanceManager, budgetManager, ui);
         } catch (MintException e) {
             ui.printError(e);
         }
     }
 }
+
+
 
 

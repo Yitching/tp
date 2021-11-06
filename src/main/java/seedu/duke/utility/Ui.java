@@ -8,6 +8,7 @@ import seedu.duke.entries.Type;
 import seedu.duke.entries.RecurringEntry;
 import seedu.duke.entries.Interval;
 import seedu.duke.entries.ExpenseCategory;
+import seedu.duke.parser.ValidityChecker;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -54,11 +55,12 @@ public class Ui {
     public static final int MIN_AMOUNT_INDENTATION = 5;
     public static final int MIN_SPENDING_INDENTATION = 6;
     public static final int MIN_LIMIT_INDENTATION = 7;
-    protected static final int INDEX_CANCEL = -1;
-    protected static final String CANCEL_MESSAGE = " To cancel, type \"cancel\"";
+    public static final int MIN_CAT_INDENTATION = 8;
+    public static final int INDEX_CANCEL = -1;
+    public static final String CANCEL_MESSAGE = " To cancel, type \"cancel\"";
     public static final String MISSING_FILE_MESSAGE = "Missing data detected! Creating the necessary files...";
     public static final String MISSING_FIELDS_MESSAGE = "There seems to be some extra/missing fields! "
-            + "Please delete the text files and try again!";
+            + "Invalid line deleted. We have reloaded the list!";
     public static final String GREETINGS = "Hello! I'm Mint" + System.lineSeparator() + "What can I do for you?";
     public static final String SHUTDOWN = "Goodbye! Hope to see you again soon!";
 
@@ -68,11 +70,6 @@ public class Ui {
 
     public void shutdown() {
         System.out.println(SHUTDOWN);
-    }
-
-    public static void printInvalidTagError() {
-        System.out.println("Sorry, we are only able to process name, date and process for now");
-        System.out.println("The following tags are available: n/ d/ a/");
     }
 
     public void help() {
@@ -106,6 +103,11 @@ public class Ui {
                 + INDENT + "Edit recurring entries using keyword search. Needs at least 1 tag. "
                 + "Example: editR n/spotify\n"
                 + SOLID_LINE
+                + "DELETE ALL ENTRIES\n"
+                + "- deleteAll [normal] [recurring]\n"
+                + INDENT + "Only deletes all entries of the corresponding type.\n"
+                + INDENT + "If no modifiers are specified, it defaults to deleting all entries regardless of type.\n"
+                + SOLID_LINE
                 + "BUDGETING. Type \"cat\" to view category number.\n"
                 + "- set c/category number a/AMOUNT\n"
                 + INDENT + "Set spending limit for individual category. Example: set c/0 100\n"
@@ -123,9 +125,10 @@ public class Ui {
         );
     }
 
-    public static void viewGivenList(ArrayList<Entry> list) {
+    public void viewGivenList(ArrayList<Entry> list) {
         int maxNameLength = MIN_NAME_INDENTATION;
         int maxAmountLength = MIN_AMOUNT_INDENTATION;
+        int maxCatLength = MIN_CAT_INDENTATION;
         System.out.println("Here is the list of items containing the keyword.");
         for (Entry entry : list) {
             if (entry.getName().length() > maxNameLength) {
@@ -134,49 +137,48 @@ public class Ui {
             if (String.format("%,.2f", entry.getAmount()).length() > maxAmountLength) {
                 maxAmountLength = String.format("%,.2f", entry.getAmount()).length();
             }
+            if (entry.getCategory().name().length() > maxCatLength) {
+                maxCatLength = entry.getCategory().name().length();
+            }
         }
-        System.out.println(" Index |   Type  |     Category     |    Date    | "
+        System.out.println(" Index |   Type  | " + getMiddleIndented("Category", maxCatLength) + " |    Date    | "
                 + getMiddleIndented("Name", maxNameLength) + " | "
                 + getMiddleIndented("Amount", maxAmountLength + 1) + " | Every |   Until");
+        int indexCount = 1;
         for (Entry entry : list) {
-            printViewIndividualEntry(entry, maxNameLength, maxAmountLength, list.indexOf(entry) + 1);
+            printViewIndividualEntry(entry, maxCatLength, maxNameLength, maxAmountLength, indexCount);
+            indexCount++;
         }
     }
 
-    public static int chooseItemToDeleteOrEdit(ArrayList<Entry> filteredList, boolean isDelete) throws MintException {
+    public int chooseItemToDeleteOrEdit(ArrayList<Entry> filteredList, boolean isDelete) {
         if (isDelete) {
             System.out.println("Enter the index of the item you want to delete." + CANCEL_MESSAGE);
         } else {
             System.out.println("Enter the index of the item you want to edit." + CANCEL_MESSAGE);
         }
-
-        Scanner in = new Scanner(System.in);
         int index = 0;
         boolean proceedToDelete = false;
-        while (!proceedToDelete) {
-            if (in.hasNextLine()) {
-                String userInput = in.nextLine();
-                if (userInput.trim().equals("cancel")) {
-                    return INDEX_CANCEL;
-                }
-                try {
-                    index = Integer.parseInt(userInput.trim());
-                } catch (NumberFormatException e) {
-                    System.out.println(MintException.ERROR_INDEX_INVALID_NUMBER + CANCEL_MESSAGE);
-                }
-                if (index < 1 || index > filteredList.size()) {
-                    System.out.println(MintException.ERROR_INDEX_OUT_OF_BOUND + CANCEL_MESSAGE);
-                } else {
-                    proceedToDelete = true;
-                }
-            } else {
-                throw new MintException("no new line found");
+
+        String userInput = readUserInput();
+        while (userInput != null && !proceedToDelete) {
+            if (userInput.equals("cancel")) {
+                return INDEX_CANCEL;
+            }
+            try {
+                index = ValidityChecker.checkInvalidIndex(userInput, filteredList.size());
+                proceedToDelete = true;
+            } catch (MintException e) {
+                System.out.println(e.getMessage() + CANCEL_MESSAGE);
+            }
+            if (!proceedToDelete) {
+                userInput = readUserInput();
             }
         }
         return index - 1;
     }
 
-    public static boolean isConfirmedToDeleteOrEdit(Entry entry, boolean isDelete) {
+    public boolean isConfirmedToDeleteOrEdit(Entry entry, boolean isDelete) {
         if (isDelete) {
             System.out.println("Is this what you want to delete?");
         } else {
@@ -187,35 +189,34 @@ public class Ui {
         return isConfirmed();
     }
 
-    public static boolean isConfirmDeleteAll() {
+    public boolean isConfirmDeleteAll() {
         System.out.println("Are you sure you want to delete all entries?");
         System.out.println("Type \"y\" if yes. Type \"n\" if not.");
         return isConfirmed();
     }
 
-    public static boolean isConfirmed() {
-        Scanner in = new Scanner(System.in);
-        while (in.hasNextLine()) {
-            String userInput = in.nextLine();
+    public boolean isConfirmed() {
+        String userInput = readUserInput();
+        while (userInput != null) {
             switch (userInput.trim()) {
             case "y":
                 return true;
             case "n":
                 return false;
             default:
-                System.out.println("Sorry I don't understand what that means. +"
+                System.out.println("Sorry I don't understand what that means. "
                         + "Type \"y\" if yes. Type \"n\" if not.");
-                break;
             }
+            userInput = readUserInput();
         }
         return false;
     }
 
-    public static void deleteAllConfirmation() {
+    public void deleteAllConfirmation() {
         System.out.println("All entries successfully deleted.");
     }
 
-    public static void deleteAborted() {
+    public void deleteAborted() {
         System.out.println("Delete aborted.");
     }
 
@@ -305,6 +306,7 @@ public class Ui {
     public int[] printView(ArrayList<Entry> outputArray, LocalDate fromDate, LocalDate endDate, double total) {
         int maxNameLength = MIN_NAME_INDENTATION;
         int maxAmountLength = MIN_AMOUNT_INDENTATION;
+        int maxCatLength = MIN_CAT_INDENTATION;
         System.out.println("Here is the list of your entries:");
         if (fromDate != null) {
             System.out.println("Since " + fromDate + " to " + endDate + ":");
@@ -316,14 +318,18 @@ public class Ui {
             if (String.format("%,.2f", entry.getAmount()).length() > maxAmountLength) {
                 maxAmountLength = String.format("%,.2f", entry.getAmount()).length();
             }
+            if (entry.getCategory().name().length() > maxCatLength) {
+                maxCatLength = entry.getCategory().name().length();
+            }
         }
-        System.out.println("  Type  |     Category     |    Date    | " + getMiddleIndented("Name", maxNameLength)
-                + " | " + getMiddleIndented("Amount", maxAmountLength + 1) + " | Every |   Until");
+        System.out.println("  Type  | " + getMiddleIndented("Category", maxCatLength) + " |    Date    | "
+                + getMiddleIndented("Name", maxNameLength) + " | "
+                + getMiddleIndented("Amount", maxAmountLength + 1) + " | Every |   Until");
         for (Entry entry : outputArray) {
-            printViewIndividualEntry(entry, maxNameLength, maxAmountLength, 0);
+            printViewIndividualEntry(entry, maxCatLength, maxNameLength, maxAmountLength, 0);
         }
-        System.out.print(getIndent(maxNameLength, 0, "")
-                + "                                Net Total: |");
+        System.out.print(getIndent(maxNameLength + maxCatLength, 0, "")
+                + "                Net Total: |");
         if (total < 0) {
             total = Math.abs(total);
             System.out.print("-$" + String.format("%,.2f", total));
@@ -331,13 +337,14 @@ public class Ui {
             System.out.print(" $" + String.format("%,.2f", total));
         }
         System.out.println();
-        return new int[]{maxNameLength, maxAmountLength};
+        return new int[]{maxCatLength, maxNameLength, maxAmountLength};
     }
 
-    private static void printViewIndividualEntry(Entry entry, int maxNameLength, int maxAmountLength, int indexInt) {
+    private static void printViewIndividualEntry(Entry entry, int maxCatLength, int maxNameLength,
+            int maxAmountLength, int indexInt) {
         String index = indexInt == 0 ? "" : "   " + indexInt + "   | ";
         String type = entry.getType() == Type.Expense ? entry.getType().toString() : entry.getType() + " ";
-        StringBuilder category = getCategoryIndented(entry.getCategory());
+        String category = getMiddleIndented(entry.getCategory().name(), maxCatLength);
         String date = entry.getDate().toString();
         String name = getMiddleIndented(entry.getName(), maxNameLength);
         String amount = getRightIndented(String.format("%,.2f", entry.getAmount()), maxAmountLength);
@@ -355,10 +362,15 @@ public class Ui {
         }
     }
 
-    public void printViewRecurring(ArrayList<Entry> entryList, int maxNameIndent, int maxAmountIndent) {
-        System.out.println("Here is the list of recurring entries added to the above list:");
+    public void printViewRecurring(ArrayList<Entry> entryList, int maxCatIndent, int maxNameIndent,
+            int maxAmountIndent, boolean isViewAll) {
+        if (isViewAll) {
+            System.out.println("Here is the list of all recurring entries, where some were added to the above list:");
+        } else {
+            System.out.println("Here is the list of recurring entries added to the above list:");
+        }
         for (Entry entry : entryList) {
-            printViewIndividualEntry(entry, maxNameIndent, maxAmountIndent, 0);
+            printViewIndividualEntry(entry, maxCatIndent, maxNameIndent, maxAmountIndent, 0);
         }
     }
 
@@ -376,19 +388,6 @@ public class Ui {
             rightIndent--;
         }
         return itemWithIndent;
-    }
-
-    public static StringBuilder getCategoryIndented(Enum category) {
-        double length = category.name().length();
-        int leftIndent = (int) Math.floor((16 - length) / 2);
-        int rightIndent = (int) Math.ceil((16 - length) / 2);
-        if (leftIndent < 0) {
-            leftIndent = 0;
-        }
-        if (rightIndent < 0) {
-            rightIndent = 0;
-        }
-        return getIndent(leftIndent, rightIndent, category.name());
     }
 
     public static String getRightIndented(String amount, int indent) {
@@ -442,6 +441,7 @@ public class Ui {
             ArrayList<Entry> recurringEntries) {
         int maxSpendingLength = MIN_SPENDING_INDENTATION;
         int maxLimitLength = MIN_LIMIT_INDENTATION;
+        int maxCatLength = MIN_CAT_INDENTATION;
         for (Budget budget : budgetList) {
             if (String.format("$%,.2f",
                     budget.getMonthlySpending(entries, recurringEntries)).length() > maxSpendingLength) {
@@ -451,20 +451,25 @@ public class Ui {
             if (String.format("$%,.2f", budget.getLimit()).length() > maxLimitLength) {
                 maxLimitLength = String.format("$%,.2f", budget.getLimit()).length();
             }
+            if (budget.getCategory().name().length() > maxCatLength) {
+                maxCatLength = budget.getCategory().name().length();
+            }
         }
-        System.out.println("Here is the budget for ." + LocalDate.now().getMonth() + " " + LocalDate.now().getYear());
-        System.out.println("    Category     | " + getLeftIndented("Amount", maxSpendingLength)
-                + " | " + getRightIndented("Budget", maxLimitLength) + " | Percentage");
+        System.out.println("Here is the budget for " + LocalDate.now().getMonth() + " " + LocalDate.now().getYear());
+        System.out.println(getMiddleIndented("Category", maxCatLength) + " | "
+                + getLeftIndented("Amount", maxSpendingLength) + " | "
+                + getRightIndented("Budget", maxLimitLength) + " | Percentage");
         for (Budget budget : budgetList) {
-            printBudgetIndividualEntry(budget, entries, recurringEntries, maxSpendingLength, maxLimitLength);
+            printBudgetIndividualEntry(budget, entries, recurringEntries, maxCatLength, maxSpendingLength,
+                    maxLimitLength);
         }
 
     }
 
     public void printBudgetIndividualEntry(Budget budget, ArrayList<Entry> entries,
-            ArrayList<Entry> recurringEntries, int maxSpendingLength,
+            ArrayList<Entry> recurringEntries, int maxCatLength, int maxSpendingLength,
             int maxLimitLength) {
-        String categoryIndented = getCategoryIndented(budget.getCategory()).toString();
+        String category = getMiddleIndented(budget.getCategory().name(), maxCatLength);
         String spending = getLeftIndented(String.format("$%,.2f",
                 budget.getMonthlySpending(entries, recurringEntries)),
                 maxSpendingLength);
@@ -475,7 +480,7 @@ public class Ui {
             percentage = String.format("%,.2f",
                     budget.getMonthlySpending(entries, recurringEntries) / budget.getLimit() * 100) + "%";
         }
-        System.out.println(categoryIndented + " | " + spending + " / " + limit + " | " + percentage);
+        System.out.println(category + " | " + spending + " / " + limit + " | " + percentage);
     }
 
     public void printBudgetWarningMessage(ExpenseCategory category, double spending, double limit) {

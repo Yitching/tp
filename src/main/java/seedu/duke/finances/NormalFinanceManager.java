@@ -11,11 +11,13 @@ import seedu.duke.utility.Ui;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class NormalFinanceManager extends FinanceManager {
+    private static Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
     public ArrayList<Entry> entryList;
-    public static boolean hasOneMatch;
 
     public NormalFinanceManager() {
         this.entryList = new ArrayList<>();
@@ -29,40 +31,9 @@ public class NormalFinanceManager extends FinanceManager {
         return entryList;
     }
 
-    //    @Override
-    //    public Entry chooseEntryByKeywords(ArrayList<String> tags, boolean isDelete, Entry query)
-    //    throws MintException {
-    //        ArrayList<Entry> filteredList = filterEntryByKeywords(tags, query);
-    //        Entry entry;
-    //        if (filteredList.size() == 0) {
-    //            throw new MintException(MintException.ERROR_EXPENSE_NOT_IN_LIST);
-    //        } else if (filteredList.size() == 1) {
-    //            Entry onlyEntry = filteredList.get(0);
-    //            if (Ui.isConfirmedToDeleteOrEdit(onlyEntry, isDelete)) {
-    //                entry = onlyEntry;
-    //            } else {
-    //                throw new MintException("Ok. I have cancelled the process.");
-    //            }
-    //            return entry;
-    //        }
-    //
-    //        Ui.viewGivenList(filteredList);
-    //
-    //        try {
-    //            int index = Ui.chooseItemToDeleteOrEdit(filteredList, isDelete);
-    //            if (index >= 0) {
-    //                entry = filteredList.get(index);
-    //            } else {
-    //                throw new MintException("Ok. I have cancelled the process.");
-    //            }
-    //        } catch (MintException e) {
-    //            throw new MintException(e.getMessage());
-    //        }
-    //        return entry;
-    //    }
-
     @Override
     public ArrayList<Entry> filterEntryByKeywords(ArrayList<String> tags, Entry query) throws MintException {
+        assert tags.size() > 0 : "There should be more than one tag to be queried";
         ArrayList<Entry> filteredList = new ArrayList<>(entryList);
         for (String tag : tags) {
             switch (tag.trim()) {
@@ -87,7 +58,8 @@ public class NormalFinanceManager extends FinanceManager {
 
     @Override
     public void deleteEntry(Entry entry) {
-        //logger.log(Level.INFO, "User deleted expense: " + entry);
+        assert entryList.contains(entry) : "entryList should contain the entry to delete.";
+        logger.log(Level.INFO, "User deleted entry: " + entry);
         entryList.remove(entry);
     }
 
@@ -104,8 +76,8 @@ public class NormalFinanceManager extends FinanceManager {
             //                logger.log(Level.INFO, "User entered invalid entry");
             throw new MintException(MintException.ERROR_EXPENSE_NOT_IN_LIST); // to link to exception class
         }
+        ValidityChecker.checkTagsFormatSpacing(choice);
         editSpecifiedEntry(choice, indexToBeChanged, entry);
-
         String newEntryStr = overWriteString(entryList.get(indexToBeChanged));
         Ui.printOutcomeOfEditAttempt();
         return new ArrayList<>(Arrays.asList(originalEntryStr, newEntryStr));

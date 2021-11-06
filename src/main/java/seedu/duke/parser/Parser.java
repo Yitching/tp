@@ -40,19 +40,20 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Parser {
-    // take note of the blank space,example " n/"
     public static final String userTag = "\\s[a-z]/";
     public static final String userTagRaw = "(.*)\\s[a-z]/(.*)";
     public static final String STRING_EMPTY = "";
     public static final String SEPARATOR = ". ";
     public static final String STRING_INCLUDE = "Please include the following in your command or make them valid: \n";
     public static final String STRING_DESCRIPTION = "Description of item\n";
-    public static final String STRING_DATE = "Date of purchase or start date of the recurring period\n";
+    public static final String STRING_DATE = "Date of purchase or start date of the recurring period"
+            + " (2000-01-01 to 2200-12-31)\n";
     public static final String STRING_AMOUNT = "Amount (Valid positive number below 1 million)\n";
     public static final String STRING_CATNUM = "Category number (0 to 7)\n";
     public static final String STRING_INTERVAL = "Interval of item (month or year in case-insensitive format e.g.,"
             + " mOnTh, year, MONTH)\n";
-    public static final String STRING_END_DATE = "End date of the recurring period\n";
+    public static final String STRING_END_DATE = "End date of the recurring period (should be after the start date"
+            + " but within valid range)\n";
     public static final String ERROR_INVALID_CATNUM = "Please enter a valid category number! c/0 to c/7";
     public static final int CAT_NUM_FOOD_INT = 0;
     public static final int CAT_NUM_OTHERS_INT = 7;
@@ -73,6 +74,7 @@ public class Parser {
     public static final String HELP = "help";
     public static final String EXIT = "exit";
     private static final String ERROR_MISSING_PARAMS = "Seems like you forgot to include your tags";
+    public static final String SPACE = "\\s+";
     protected String command;
     protected String name;
     protected String dateStr;
@@ -313,7 +315,7 @@ public class Parser {
     }
 
     public void parseInputByArguments(String userInput) {
-        argumentsArray = userInput.split("\\s+");
+        argumentsArray = userInput.split(SPACE);
     }
 
 

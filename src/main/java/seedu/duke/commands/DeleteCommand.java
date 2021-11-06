@@ -44,7 +44,7 @@ public class DeleteCommand extends Command {
         }
     }
 
-    Entry determineEntryToDelete(FinanceManager financeManager, Ui ui) throws MintException {
+    public Entry determineEntryToDelete(FinanceManager financeManager, Ui ui) throws MintException {
         try {
             ArrayList<Entry> filteredList = financeManager.filterEntryByKeywords(tags, query);
             switch (filteredList.size()) {
@@ -61,7 +61,7 @@ public class DeleteCommand extends Command {
         }
     }
 
-    Entry confirmToDeleteOneMatch(ArrayList<Entry> filteredList, Ui ui) {
+    public Entry confirmToDeleteOneMatch(ArrayList<Entry> filteredList, Ui ui) {
         if (ui.isConfirmedToDeleteOrEdit(filteredList.get(0), isDelete)) {
             return filteredList.get(0);
         } else {
@@ -70,17 +70,13 @@ public class DeleteCommand extends Command {
         }
     }
 
-    Entry confirmToDeleteMultipleMatch(ArrayList<Entry> filteredList, Ui ui) {
-        try {
-            ui.viewGivenList(filteredList);
-            int index = ui.chooseItemToDeleteOrEdit(filteredList, isDelete);
-            if (index >= 0) {
-                return filteredList.get(index);
-            } else {
-                ui.printCancelMessage();
-            }
-        } catch (MintException e) {
-            ui.printError(e);
+    public Entry confirmToDeleteMultipleMatch(ArrayList<Entry> filteredList, Ui ui) {
+        ui.viewGivenList(filteredList);
+        int index = ui.chooseItemToDeleteOrEdit(filteredList, isDelete);
+        if (index >= 0) {
+            return filteredList.get(index);
+        } else {
+            ui.printCancelMessage();
         }
         return null;
     }

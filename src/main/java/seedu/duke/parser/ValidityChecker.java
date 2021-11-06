@@ -27,7 +27,7 @@ public class ValidityChecker {
     public static final Pattern doublePattern = Pattern.compile("\\d+(\\.\\d+)?");
     public static final String userTagNoSpace = "(.*)[0-9a-zA-Z/\\-.][a-zA-Z]/(.*)";
     public static final String invalidForwardSlash = "(.*)[0-9a-zA-Z/\\-.][0-9/\\-.]/(.*)";
-    public static final String forwardSlashWithoutTagType = "(.*)[ ]/(.*)";
+    public static final String forwardSlashWithoutTagType = "(.*)[ \\-.]/(.*)";
     public static final double AMOUNT_LIMIT = 1000000.0;
 
     public static DateTimeFormatter dateFormatter
@@ -35,7 +35,7 @@ public class ValidityChecker {
             + "[dd-MM-yyyy][d-MM-yyyy][d-M-yyyy][dd-M-yyyy]"
             + "[dd MMM yyyy][d MMM yyyy][dd MMM yy][d MMM yy]");
 
-    static void checkEmptyName(String name) throws MintException {
+    public static void checkEmptyName(String name) throws MintException {
         boolean hasEmptyName = name.equals(Parser.STRING_EMPTY);
         if (hasEmptyName) {
             logger.log(Level.INFO, "User entered empty name");
@@ -43,7 +43,7 @@ public class ValidityChecker {
         }
     }
 
-    static void checkInvalidAmount(String amountStr) throws MintException {
+    public static void checkInvalidAmount(String amountStr) throws MintException {
         boolean isDoubleWithoutLetters = doublePattern.matcher(amountStr).matches();
         boolean isEmpty = amountStr == null;
         if (isEmpty || !isDoubleWithoutLetters) {
@@ -55,21 +55,31 @@ public class ValidityChecker {
         }
     }
 
-    static void checkInvalidDate(String dateStr) throws MintException {
+    public static void checkInvalidDate(String dateStr) throws MintException {
         try {
-            LocalDate.parse(dateStr, dateFormatter);
+            LocalDate date = LocalDate.parse(dateStr, dateFormatter);
+            int year = date.getYear();
+            if (year < 2000 || year > 2200) {
+                throw new MintException(MintException.ERROR_INVALID_YEAR);
+            }
         } catch (DateTimeParseException e) {
             logger.log(Level.INFO, "User entered invalid date");
             throw new MintException(MintException.ERROR_INVALID_DATE);
         }
     }
 
-    static void checkInvalidEndDate(String endDateStr, String startDateStr) throws MintException {
+    public static void checkInvalidEndDate(String endDateStr, String startDateStr) throws MintException {
         try {
-            LocalDate parsedEndDate = LocalDate.parse(endDateStr, dateFormatter);
-            LocalDate parsedStartDate = LocalDate.parse(startDateStr, dateFormatter);
-            if (parsedEndDate.isBefore(parsedStartDate)) {
-                throw new MintException("End date must be after start date.");
+            LocalDate endDate = LocalDate.parse(endDateStr, dateFormatter);
+            LocalDate startDate = LocalDate.parse(startDateStr, dateFormatter);
+
+            int year = endDate.getYear();
+            if (year < 2000 || year > 2200) {
+                throw new MintException(MintException.ERROR_INVALID_YEAR);
+            }
+
+            if (!endDate.isAfter(startDate)) {
+                throw new MintException(MintException.ERROR_INVALID_END_DATE);
             }
         } catch (DateTimeParseException e) {
             logger.log(Level.INFO, "User entered invalid date");
@@ -92,12 +102,26 @@ public class ValidityChecker {
 
     }
 
-    private static void checkInvalidInterval(String intervalStr) throws MintException {
+    public static void checkInvalidInterval(String intervalStr) throws MintException {
         try {
             Interval.valueOf(intervalStr.toUpperCase());
         } catch (IllegalArgumentException e) {
             logger.log(Level.INFO, "User entered invalid interval");
-            throw new MintException("Please enter valid interval: MONTH, YEAR");
+            throw new MintException(MintException.ERROR_INVALID_INTERVAL);
+        }
+    }
+
+    public static int checkInvalidIndex(String indexStr, int size) throws MintException {
+        try {
+            int index = Integer.parseInt(indexStr);
+            if (index < 1 || index > size) {
+                logger.log(Level.INFO, "User entered out of bound index");
+                throw new MintException(MintException.ERROR_INDEX_OUT_OF_BOUND);
+            }
+            return index;
+        } catch (NumberFormatException e) {
+            logger.log(Level.INFO, "User entered invalid number index");
+            throw new MintException(MintException.ERROR_INDEX_INVALID_NUMBER);
         }
     }
 
@@ -161,7 +185,6 @@ public class ValidityChecker {
         }
 
         if (invalidTags.size() > 0) {
-            //Ui.constructErrorMessage(invalidTags);
             throw new MintException(Ui.constructErrorMessage(invalidTags).toString());
         } else if (validTags.size() == 0) {
             throw new MintException("Please enter at least one tag.");

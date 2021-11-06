@@ -36,19 +36,24 @@ public class ViewCommand extends Command {
 
             outputArray = normalFinanceManager.getCopyOfArray();
             outputArray = recurringFinanceManager.appendEntryForView(viewOptions, outputArray, recurringOutputArray);
-
-            outputArray.sort(Sorter.compareByDate);
-            recurringOutputArray.sort(Sorter.compareByDate);
-            applyModifiers(outputArray);
-            applyRecurringModifiers(recurringOutputArray);
-
-            double total = calculateTotal(outputArray);
-            int[] indentations = ui.printView(outputArray, viewOptions.fromDate, viewOptions.endDate, total);
-            ui.printViewRecurring(recurringOutputArray, indentations[0], indentations[1]);
+            view(outputArray, recurringOutputArray, ui, viewOptions.isViewAll);
         } catch (MintException e) {
             ui.printError(e);
         }
     }
+
+    public void view(ArrayList<Entry> outputArray, ArrayList<Entry> recurringOutputArray,
+                     Ui ui, boolean isViewAll) throws MintException {
+        outputArray.sort(Sorter.compareByDate);
+        recurringOutputArray.sort(Sorter.compareByDate);
+        applyModifiers(outputArray);
+        applyRecurringModifiers(recurringOutputArray);
+
+        double total = calculateTotal(outputArray);
+        int[] indentations = ui.printView(outputArray, viewOptions.fromDate, viewOptions.endDate, total);
+        ui.printViewRecurring(recurringOutputArray, indentations[0], indentations[1], indentations[2], isViewAll);
+    }
+
 
     public void applyModifiers(ArrayList<Entry> outputArray) throws MintException {
         if (viewOptions.onlyExpense) {

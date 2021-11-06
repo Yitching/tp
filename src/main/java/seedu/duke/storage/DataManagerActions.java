@@ -21,10 +21,20 @@ public class DataManagerActions {
 
     public void createDirectory() {
         Path path = Paths.get("data" + File.separator + "Mint.txt");
+        File myObj = new File(String.valueOf(path.getParent()));
         try {
             Files.createDirectories(path.getParent());
         } catch (IOException e) {
-            e.printStackTrace();
+            if (!myObj.isDirectory()) {
+                Ui.printRetryFileCreationMessage();
+                myObj.delete();
+                createDirectory();
+                try {
+                    throw new MintException("Essential files created!");
+                } catch (MintException mintException) {
+                    System.out.println(mintException.getMessage());
+                }
+            }
         }
     }
 

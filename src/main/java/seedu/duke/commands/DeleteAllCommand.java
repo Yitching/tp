@@ -26,16 +26,16 @@ public class DeleteAllCommand extends Command {
             NormalListDataManager normalListDataManager, DataManagerActions dataManagerActions,
             RecurringListDataManager recurringListDataManager, BudgetDataManager budgetDataManager, Ui ui) {
 
-        if (Ui.isConfirmDeleteAll()) {
+        if (ui.isConfirmDeleteAll()) {
             if (isNormal) {
                 deleteAllNormal(normalFinanceManager, normalListDataManager);
             }
             if (isRecurring) {
                 deleteAllRecurring(recurringFinanceManager, recurringListDataManager);
             }
-            Ui.deleteAllConfirmation();
+            ui.deleteAllConfirmation();
         } else {
-            Ui.deleteAborted();
+            ui.deleteAborted();
         }
     }
 

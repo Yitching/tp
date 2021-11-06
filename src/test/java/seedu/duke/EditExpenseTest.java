@@ -21,7 +21,7 @@ class EditExpenseTest {
         System.setIn(in);
         String name = "Samurai Burger";
         LocalDate date = LocalDate.parse("2021-02-01", dateFormatter);
-        Double amount = Double.parseDouble("7.50");
+        double amount = Double.parseDouble("7.50");
         ExpenseCategory category = ExpenseCategory.FOOD;
         Expense expense = new Expense(name, date, amount, category);
         NormalFinanceManager normalFinanceManager = new NormalFinanceManager();
@@ -44,7 +44,7 @@ class EditExpenseTest {
         System.setIn(in);
         String name = "Samurai Burger";
         LocalDate date = LocalDate.parse("2021-02-01", dateFormatter);
-        Double amount = Double.parseDouble("7.50");
+        double amount = Double.parseDouble("7.50");
         ExpenseCategory category = ExpenseCategory.FOOD;
         Expense expense = new Expense(name, date, amount, category);
         NormalFinanceManager normalFinanceManager = new NormalFinanceManager();
@@ -67,7 +67,7 @@ class EditExpenseTest {
         System.setIn(in);
         String name = "Samurai Burger";
         LocalDate date = LocalDate.parse("2021-02-01", dateFormatter);
-        Double amount = Double.parseDouble("7.50");
+        double amount = Double.parseDouble("7.50");
         ExpenseCategory category = ExpenseCategory.FOOD;
         Expense expense = new Expense(name, date, amount, category);
         NormalFinanceManager normalFinanceManager = new NormalFinanceManager();

@@ -61,14 +61,13 @@ public class Duke {
         while (userInput != null) {
             if (ui.hasUnsafeCharacters(userInput)) {
                 ui.printUnsafeCharacters();
-                userInput = ui.readUserInput();
-                continue;
-            }
-            Command command = parser.parseCommand(userInput);
-            command.execute(normalFinanceManager, recurringFinanceManager, budgetManager, normalListDataManager,
-                    dataManagerActions, recurringListDataManager, budgetDataManager, ui);
-            if (command.isExit()) {
-                break;
+            } else {
+                Command command = parser.parseCommand(userInput);
+                command.execute(normalFinanceManager, recurringFinanceManager, budgetManager, normalListDataManager,
+                        dataManagerActions, recurringListDataManager, budgetDataManager, ui);
+                if (command.isExit()) {
+                    break;
+                }
             }
             userInput = ui.readUserInput();
         }

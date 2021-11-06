@@ -50,18 +50,33 @@ public class RecurringListDataManager extends DataManagerActions {
             if (fieldsInTextFile.length() == 0) {
                 continue;
             }
-            String[] params = fieldsInTextFile.split("\\|");
-            String type = params[0];
-            String catNum = params[1];
-            String date = params[2];
-            String name = params[3];
-            String amount = params[4];
-            String interval = params[5];
-            String endDate = params[6];
-            ValidityChecker.checkValidityOfFieldsInNormalListTxt(type, name, date, amount, catNum);
-            ValidityChecker.checkValidityOfFieldsInRecurringListTxt(interval, endDate);
-            loadEntry(type, name, date, amount, catNum, interval, endDate, entryList);
+            try {
+                String[] params = fieldsInTextFile.split("\\|");
+                String type = params[0];
+                String catNum = params[1];
+                String date = params[2];
+                String name = params[3];
+                String amount = params[4];
+                String interval = params[5];
+                String endDate = params[6];
+                ValidityChecker.checkValidityOfFieldsInNormalListTxt(type, name, date, amount, catNum);
+                ValidityChecker.checkValidityOfFieldsInRecurringListTxt(interval, endDate);
+                loadEntry(type, name, date, amount, catNum, interval, endDate, entryList);
+            } catch (MintException e) {
+                reload(entryList, fieldsInTextFile);
+                throw new MintException(e.getMessage() + " Invalid line deleted. We have reloaded the list!");
+            } catch (ArrayIndexOutOfBoundsException e) {
+                reload(entryList, fieldsInTextFile);
+                throw new ArrayIndexOutOfBoundsException();
+            }
         }
+    }
+
+    public void reload(ArrayList<Entry> entryList, String fieldsInTextFile) throws FileNotFoundException,
+            MintException {
+        deleteLineInTextFile(fieldsInTextFile);
+        entryList.clear();
+        loadEntryListContents(entryList);
     }
 
     public void loadEntry(String type, String name, String dateStr, String amountStr,
